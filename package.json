@@ -1,0 +1,26 @@
+{
+  "name": "openmusicvisualizer",
+  "version": "1.0.0",
+  "description": "open music visualizer",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GreysonFlippo1/openmusicvisualizer.git"
+  },
+  "keywords": [
+    "visualizer"
+  ],
+  "author": "greysonflippo1",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GreysonFlippo1/openmusicvisualizer/issues"
+  },
+  "homepage": "https://github.com/GreysonFlippo1/openmusicvisualizer#readme",
+  "devDependencies": {
+    "electron": "^21.3.1"
+  }
+}
