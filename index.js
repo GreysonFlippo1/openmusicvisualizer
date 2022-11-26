@@ -1,6 +1,6 @@
 
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, Menu } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain } = require('electron')
 const path = require('path')
 
 const template = [
@@ -29,10 +29,16 @@ const template = [
           label: 'Visualizer',
            submenu: [
             {
-              label: 'Bars'
+              label: 'Bars',
+              click: () => {
+                changeVisualizer('bars')
+              }
             },
             {
-              label: 'Wave'
+              label: 'Wave',
+              click: () => {
+                changeVisualizer('wave')
+              }
             }
          ]
         },
@@ -67,6 +73,12 @@ const template = [
   }
 ]
 
+let contents
+
+const changeVisualizer = (type) => {
+  contents.send('changeVisualizer', [type])
+}
+
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -77,7 +89,7 @@ const createWindow = () => {
     },
   })
 
-  const contents = mainWindow.webContents
+  contents = mainWindow.webContents
 
   contents.on('did-finish-load', () => {
     contents.setAudioMuted(true)
