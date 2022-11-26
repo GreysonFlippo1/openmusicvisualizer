@@ -6,9 +6,9 @@ const userPreferences = {
   colorCycle: true,
   primary_color: 'white',
   secondary_color: 'white',
-  max_height: 200,
+  max_height: 100,
   smoothingTimeConstant: 0,
-  fftUni: 16384,
+  fftUni: 8192,
   barWidth: 12,
   barSpacing: 2,
 };
@@ -17,10 +17,6 @@ let barAmnt = 0;
 let vizReady = 0;
 
 let mediaElement = {};
-//                         bar, wav , cir , amb ,
-const visualizerToggles = [false, false, false, false];
-// const visualizerToggleFunctions = [toggleBarVis, toggleWaveViz, toggleCircleViz, toggleAmbienceViz];
-let visualizerToggleButtons = [];
 
 function drawBars() {
   let barAmntTemp = 0;
@@ -97,19 +93,64 @@ function cycleColor() {
   return 'rgb(' + red + ',' + green + ',' + blue + ')';
 }
 
+let currentVisualizer = 'none'
+
 function barVis() {
-  mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData);
-  const barColor = userPreferences.colorCycle ? cycleColor() : userPreferences.primary_color;
-  for (let i = 0; i < barAmnt; i++) {
-    if (vizReady == barAmnt) {
-      const bar = document.getElementById('bar' + i)
-      const formula = Math.ceil(Math.pow(i, 1.25));
-      const frequencyData = mediaElement.frequencyData[formula];
-      const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.30) * (userPreferences.max_height / 100);
-      bar.style.height = pop + 'px';
-      bar.style.backgroundColor = barColor;
+  if(mediaElement.analyser) {
+    mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData);
+    const barColor = userPreferences.colorCycle ? cycleColor() : userPreferences.primary_color;
+    for (let i = 0; i < barAmnt; i++) {
+      if (vizReady == barAmnt) {
+        const bar = document.getElementById('bar' + i)
+        const formula = Math.ceil(Math.pow(i, 1.25));
+        const frequencyData = mediaElement.frequencyData[formula];
+        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.30) * (userPreferences.max_height / 100);
+        bar.style.height = pop + 'px';
+        bar.style.backgroundColor = barColor;
+      }
     }
   }
+}
+
+function waveVis() {
+  const canvasCtx = document.getElementById('canvas1').getContext('2d');
+  const WIDTH = window.innerWidth;
+  const HEIGHT = window.innerHeight;
+    mediaElement.analyser.getByteTimeDomainData(mediaElement.dataArray);
+    canvasCtx.width = WIDTH;
+    canvasCtx.height = HEIGHT;
+    canvasCtx.fillStyle = 'rgba(0, 0, 0, 1)';
+    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+    canvasCtx.strokeStyle = userPreferences.colorCycle ? cycleColor() : userPreferences.primary_color;
+    canvasCtx.lineWidth = 3000 / window.innerHeight;
+    canvasCtx.shadowColor = '#000';
+    canvasCtx.shadowBlur = 1;
+    canvasCtx.shadowOffsetX = 0;
+    canvasCtx.shadowOffsetY = 0;
+    if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3; }
+    canvasCtx.beginPath();
+    const sliceWidth = WIDTH / mediaElement.bufferLength * 4;
+    const radius1 = HEIGHT / 4;
+    let x = 0;
+    let lastx = WIDTH / 2 + radius1;
+    let lasty = HEIGHT / 2;
+
+    for (let i = mediaElement.bufferLength / 2; i < mediaElement.bufferLength; i++) {
+      const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.max_height / 100)) + 1;
+      const radius2 = radius1 + (v * v * 150) * (HEIGHT / 1500);
+      const y = v * HEIGHT / 2;
+      if (currentVisualizer === 'circle') {
+          canvasCtx.lineTo((WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength * 2), (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength * 2) * -1);
+      } else {
+          canvasCtx.lineTo(x, y);
+      }
+      lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength);
+      lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength) * -1;
+      x += sliceWidth;
+    }
+    if (currentVisualizer === 'circle') { canvasCtx.lineTo(lastx, lasty); }
+    canvasCtx.stroke();
+    if (currentVisualizer === 'wave' || currentVisualizer === 'circle') { window.requestAnimationFrame(waveVis); }
 }
 
 const constraints = {
@@ -138,10 +179,21 @@ let runBarVisualizer;
 let drawBarsUpdate;
 
 const setBarVisualizer = () => {
-  if (!runBarVisualizer) {
+  if (currentVisualizer !== 'bars') {
+    document.getElementById('canvas1').style.display = 'none'
     drawBars()
-    runBarVisualizer = setInterval(barVis, 17);
-    drawBarsUpdate = setInterval(drawBars, 500);
+    runBarVisualizer = setInterval(barVis, 17)
+    drawBarsUpdate = setInterval(drawBars, 500)
+  }
+}
+
+const setWaveVisualizer = () => {
+  if (currentVisualizer !== 'wave') {
+    document.getElementById('canvas1').style.display = 'block'
+    clearInterval(drawBarsUpdate)
+    clearInterval(runBarVisualizer)
+    removeBars()
+    window.requestAnimationFrame(waveVis)
   }
 }
 
@@ -152,12 +204,21 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
       setBarVisualizer()
       break
     case 'wave':
+      setWaveVisualizer()
       break
     default:
       break
   }
+  currentVisualizer = visualizerType
 });
+
+function updateGUI() {
+  document.getElementById('canvas1').setAttribute('height', window.innerHeight);
+  document.getElementById('canvas1').setAttribute('width', window.innerWidth);
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   setBarVisualizer()
+  currentVisualizer = 'bars'
+  setInterval(updateGUI, 250);
 })
