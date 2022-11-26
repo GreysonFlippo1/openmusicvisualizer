@@ -1,7 +1,71 @@
 
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, webContents } = require('electron')
+const { app, BrowserWindow, Menu } = require('electron')
 const path = require('path')
+
+const template = [
+  {
+     label: 'Edit',
+     submenu: [
+        {
+           label: 'Settings'
+        },
+     ]
+  },
+  
+  {
+     label: 'View',
+     submenu: [
+        {
+           role: 'reload'
+        },
+        {
+           role: 'toggledevtools'
+        },
+        {
+           type: 'separator'
+        },
+        {
+          label: 'Visualizer',
+           submenu: [
+            {
+              label: 'Bars'
+            },
+            {
+              label: 'Wave'
+            }
+         ]
+        },
+        {
+           type: 'separator'
+        },
+        {
+           role: 'togglefullscreen'
+        }
+     ]
+  },
+  
+  {
+     role: 'window',
+     submenu: [
+        {
+           role: 'minimize'
+        },
+        {
+           role: 'close'
+        }
+     ]
+  },
+  
+  {
+     role: 'help',
+     submenu: [
+        {
+           label: 'Learn More'
+        }
+     ]
+  }
+]
 
 const createWindow = () => {
   // Create the browser window.
@@ -18,6 +82,9 @@ const createWindow = () => {
   contents.on('did-finish-load', () => {
     contents.setAudioMuted(true)
   })
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu) 
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
