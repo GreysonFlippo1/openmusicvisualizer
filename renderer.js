@@ -1,10 +1,9 @@
 
 const userPreferences = {
     colorCycle: true,
-    auto_connect: true,
     primary_color: 'white',
     secondary_color: 'white',
-    max_height: 100,
+    max_height: 200,
     smoothingTimeConstant: 0,
     fftUni: 16384,
     barWidth: 12,
@@ -14,7 +13,7 @@ const userPreferences = {
 let barAmnt = 0;
 let vizReady = 0;
 
-const mediaElements = [];
+let mediaElement = {};
 //                         bar, wav , cir , amb ,
 const visualizerToggles = [false, false, false, false];
 // const visualizerToggleFunctions = [toggleBarVis, toggleWaveViz, toggleCircleViz, toggleAmbienceViz];
@@ -47,7 +46,88 @@ function drawBars() {
     vizReady = barAmnt;
   }
 
+  function setAudioSource(stream) {
+
+    const audioCtx = new AudioContext();
+    const analyser = audioCtx.createAnalyser();
+    analyser.smoothingTimeConstant = userPreferences.smoothingTimeConstant;
+    const source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = userPreferences.fftUni;
+    const frequencyData = new Uint8Array(analyser.frequencyBinCount);
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    mediaElement = {
+      node: stream,
+      attached: true,
+      audioCtx,
+      analyser,
+      frequencyData,
+      bufferLength,
+      dataArray,
+    };
+  }
+
+  let red = 255;
+  let green = 0;
+  let blue = 0;
+
+  function cycleColor() {
+    if (red == 255) {
+      if (blue > 0) { blue--; } else { green++; }
+    }
+
+    if (green == 255) {
+      if (red > 0) { red--; } else { blue++; }
+    }
+
+    if (blue == 255) {
+      if (green > 0) { green--; } else { red++; }
+    }
+    return 'rgb(' + red + ',' + green + ',' + blue + ')';
+  }
+
+  function barVis() {
+    mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData);
+    const barColor = userPreferences.colorCycle ? cycleColor() : userPreferences.primary_color;
+    for (let i = 0; i < barAmnt; i++) {
+      if (vizReady == barAmnt) {
+        const bar = document.getElementById('bar' + i)
+        const formula = Math.ceil(Math.pow(i, 1.25));
+        const frequencyData = mediaElement.frequencyData[formula];
+        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.30) * (userPreferences.max_height / 100);
+        bar.style.height = pop + 'px';
+        bar.style.backgroundColor = barColor;
+      }
+    }
+  }
+
+  const constraints = {
+    audio: {
+      deviceId: '61be88311892ec5aabc55b75980476318c0f810a084962ae146da188f196020f',
+    },
+  };
+  
+  navigator.mediaDevices.getUserMedia(constraints)
+    .then((mediaStream) => {
+      console.log(mediaStream.getAudioTracks()[0])
+      setAudioSource(mediaStream)
+      setInterval(barVis, 17)
+    })
+    .catch((err) => {
+      console.error(`${err.name}: ${err.message}`);
+    });
+
+
+    navigator.mediaDevices.enumerateDevices().then((e) => {
+      console.log(e)
+
+    }).catch((err) => {
+      console.error(`${err.name}: ${err.message}`);
+    });
+
 window.addEventListener('DOMContentLoaded', () => {
     drawBars()
-    console.log(barAmnt)
 })

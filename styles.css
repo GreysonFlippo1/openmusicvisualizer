@@ -5,7 +5,7 @@ body {
 
 .bars{
     width: 12px;
-    height: 10px;
+    height: 0px;
     position: fixed;
     bottom: 0px;
     background-color: #ffffff;
