@@ -104,7 +104,7 @@ function barVis() {
         const bar = document.getElementById('bar' + i)
         const formula = Math.ceil(Math.pow(i, 1.25));
         const frequencyData = mediaElement.frequencyData[formula];
-        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.30) * (userPreferences.max_height / 100);
+        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.max_height / 100);
         bar.style.height = pop + 'px';
         bar.style.backgroundColor = barColor;
       }
@@ -188,11 +188,13 @@ const setBarVisualizer = () => {
 }
 
 const setWaveVisualizer = () => {
-  if (currentVisualizer !== 'wave') {
+  if (currentVisualizer !== 'wave' && currentVisualizer !== 'circle') {
     document.getElementById('canvas1').style.display = 'block'
-    clearInterval(drawBarsUpdate)
-    clearInterval(runBarVisualizer)
-    removeBars()
+    if (currentVisualizer === 'bars') {
+      clearInterval(drawBarsUpdate)
+      clearInterval(runBarVisualizer)
+      removeBars()
+    }
     window.requestAnimationFrame(waveVis)
   }
 }
@@ -204,6 +206,9 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
       setBarVisualizer()
       break
     case 'wave':
+      setWaveVisualizer()
+      break
+    case 'circle':
       setWaveVisualizer()
       break
     default:

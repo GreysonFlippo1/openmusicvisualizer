@@ -39,6 +39,12 @@ const template = [
               click: () => {
                 changeVisualizer('wave')
               }
+            },
+            {
+              label: 'Circle',
+              click: () => {
+                changeVisualizer('circle')
+              }
             }
          ]
         },
