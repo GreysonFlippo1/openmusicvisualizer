@@ -10,8 +10,15 @@ const template = [
       label: app.name,
       submenu: [
          {
-            label: 'Settings'
+            label: 'Preferences'
          },
+         {
+            type: 'separator'
+         },
+         {
+            role: 'quit',
+            label: 'Quit Open Music Visualizer'
+         }
       ]
    }] : []),
    {
@@ -27,7 +34,7 @@ const template = [
             type: 'separator'
          },
          {
-            label: 'Visualizer',
+            label: 'Visualizer Type',
             submenu: [
             {
                label: 'Bars',
