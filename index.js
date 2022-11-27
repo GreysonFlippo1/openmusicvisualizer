@@ -3,80 +3,93 @@
 const { app, BrowserWindow, Menu, ipcMain } = require('electron')
 const path = require('path')
 
+const isMac = process.platform === 'darwin'
+
 const template = [
-  {
-     label: 'Edit',
-     submenu: [
-        {
-           label: 'Settings'
-        },
-     ]
-  },
-  
-  {
-     label: 'View',
-     submenu: [
-        {
-           role: 'reload'
-        },
-        {
-           role: 'toggledevtools'
-        },
-        {
-           type: 'separator'
-        },
-        {
-          label: 'Visualizer',
-           submenu: [
+   ...(isMac ? [{
+      label: app.name,
+      submenu: [
+         {
+            label: 'Settings'
+         },
+      ]
+   }] : []),
+   {
+      label: 'View',
+      submenu: [
+         {
+            role: 'reload'
+         },
+         {
+            role: 'toggledevtools'
+         },
+         {
+            type: 'separator'
+         },
+         {
+            label: 'Visualizer',
+            submenu: [
             {
-              label: 'Bars',
-              click: () => {
-                changeVisualizer('bars')
-              }
+               label: 'Bars',
+               click: () => {
+                  changeVisualizer('bars')
+               }
             },
             {
-              label: 'Wave',
-              click: () => {
-                changeVisualizer('wave')
-              }
+               label: 'Wave',
+               click: () => {
+                  changeVisualizer('wave')
+               }
             },
             {
-              label: 'Circle',
-              click: () => {
-                changeVisualizer('circle')
-              }
+               label: 'Circle',
+               click: () => {
+                  changeVisualizer('circle')
+               }
             }
          ]
-        },
-        {
-           type: 'separator'
-        },
-        {
-           role: 'togglefullscreen'
-        }
-     ]
-  },
-  
-  {
-     role: 'window',
-     submenu: [
-        {
-           role: 'minimize'
-        },
-        {
-           role: 'close'
-        }
-     ]
-  },
-  
-  {
-     role: 'help',
-     submenu: [
-        {
-           label: 'Learn More'
-        }
-     ]
-  }
+         },
+         {
+            type: 'separator'
+         },
+         {
+            role: 'togglefullscreen'
+         }
+      ]
+   },
+
+   {
+      label: 'Options',
+      submenu: [
+         {
+            label: 'Option1'
+         },
+         {
+            label: 'Option2'
+         }
+      ]
+   },
+
+   {
+      role: 'window',
+      submenu: [
+         {
+            role: 'minimize'
+         },
+         {
+            role: 'close'
+         }
+      ]
+   },
+
+   {
+      role: 'help',
+      submenu: [
+         {
+            label: 'Learn More'
+         }
+      ]
+   }
 ]
 
 let contents
@@ -90,6 +103,8 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
+    title: 'Open Music Visualizer',
+   //  transparent: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },
