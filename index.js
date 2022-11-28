@@ -74,23 +74,17 @@ const template = [
    {
       label: 'Options',
       submenu: [
-         ...(!isMac ? [{
-            label: app.name,
-            submenu: [
-               {
-                  label: 'Change Audio Source',
-                  click: () => {
-                     changeAudioSource()
-                  },
-               },
-               {
-                  label: 'Settings'
-               },
-               {
-                  type: 'separator'
-               },
-            ]
-         }] : []),
+         ...(!isMac ? [
+            {
+               label: 'Change Audio Source',
+               click: () => {
+                  changeAudioSource()
+               }
+            },
+            {
+               label: 'Settings'
+            }
+         ] : []),
          {
             label: 'Extra Tall Bars',
             type: 'checkbox',
