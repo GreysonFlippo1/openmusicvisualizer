@@ -105,6 +105,9 @@ const template = [
       role: 'window',
       submenu: [
          {
+            role: 'togglefullscreen'
+         },
+         {
             role: 'minimize'
          },
          {

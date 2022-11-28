@@ -175,7 +175,7 @@ let runBarVisualizer;
 let drawBarsUpdate;
 
 const setBarVisualizer = () => {
-  if (currentVisualizer !== 'bars') {
+  if (currentVisualizer !== 'bars' && currentVisualizer !== 'centeredBars') {
     document.getElementById('canvas1').style.display = 'none'
     drawBars()
     runBarVisualizer = setInterval(barVis, 17)
@@ -186,7 +186,7 @@ const setBarVisualizer = () => {
 const setWaveVisualizer = () => {
   if (currentVisualizer !== 'wave' && currentVisualizer !== 'circle') {
     document.getElementById('canvas1').style.display = 'block'
-    if (currentVisualizer === 'bars') {
+    if (currentVisualizer === 'bars' || currentVisualizer === 'centeredBars') {
       clearInterval(drawBarsUpdate)
       clearInterval(runBarVisualizer)
       removeBars()
