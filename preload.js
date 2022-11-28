@@ -243,6 +243,7 @@ const toggleSettingsMenu = () => {
 }
 
 const changeSource = (device) => {
+  //may need to consider if source no longer exists
   document.getElementById(constraints.audio.kind + constraints.audio.deviceId).style.color = '#fff'
   constraints.audio.deviceId = device.deviceId
   constraints.audio.kind = device.kind
@@ -272,3 +273,53 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 })
+
+const keysPressed = [];
+
+document.onkeydown = keyPressed;
+document.onkeyup = keyReleased;
+
+function keyPressed(e) {
+
+  const secondaryKey = 17; // control
+  // let openVisualizerKey = 86; // v
+  const openVisualizerKey = 113; // f2
+  const escapeKey = 27;
+  // eslint-disable-next-line no-unused-vars
+  const devKey = 192; // `
+
+  const viz1Key = 49; // 1
+  const viz2Key = 50; // 2
+  const viz3Key = 51; // 3
+  // const viz4Key = 52; // 4
+
+
+  if (keysPressed.length == 0 || keysPressed[keysPressed.length - 1] != e.keyCode) {
+    keysPressed.push(e.keyCode);
+  }
+
+  // if (keysPressed.includes(openVisualizerKey)) {
+  //   toggleSettings();
+  // }
+
+  if (keysPressed.includes(secondaryKey) && keysPressed.includes(viz1Key)) {
+    setActiveVisualizer(0);
+  }
+
+  if (keysPressed.includes(secondaryKey) && keysPressed.includes(viz2Key)) {
+    setActiveVisualizer(1);
+  }
+
+  if (keysPressed.includes(secondaryKey) && keysPressed.includes(viz3Key)) {
+    setActiveVisualizer(2);
+  }
+
+  if (keysPressed.includes(escapeKey) && document.getElementById('settingsPanel').style.display === 'block') {
+    toggleSettingsMenu();
+  }
+
+}
+
+function keyReleased(e) {
+  keysPressed.pop();
+}
