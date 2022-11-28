@@ -1,6 +1,8 @@
 body {
     background-color: black;
     color: white;
+    font-family: sans-serif;
+    overflow-x: hidden;
 }
 
 .bars{
@@ -21,4 +23,38 @@ body {
     width: 100%;
     height: 100%;
     display: none;
+}
+
+#settingsPanel {
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    color: white;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding-left: 100px;
+    padding-top: 150px;
+    display: none;
+}
+
+#settingsTitle {
+    font-size: 40px;
+    font-weight: bold;
+    color: #ddd
+}
+
+#settingsList {
+    line-height: 30px;
+    width: 500px;
+}
+
+#settingsList li{
+    cursor: pointer;
+}
+
+#settingsList li:hover{
+    opacity: 0.8;
 }

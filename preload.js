@@ -155,25 +155,19 @@ function waveVis() {
 
 const constraints = {
   audio: {
-    deviceId: '61be88311892ec5aabc55b75980476318c0f810a084962ae146da188f196020f',
+    // deviceId: '61be88311892ec5aabc55b75980476318c0f810a084962ae146da188f196020f',
+    deviceId: 'default',
+    kind: 'audioinput'
   },
 };
 
 navigator.mediaDevices.getUserMedia(constraints)
   .then((mediaStream) => {
-    console.log(mediaStream.getAudioTracks()[0])
     setAudioSource(mediaStream)
   })
   .catch((err) => {
     console.error(`${err.name}: ${err.message}`);
   });
-
-
-navigator.mediaDevices.enumerateDevices().then((e) => {
-  console.log(e)
-  }).catch((err) => {
-  console.error(`${err.name}: ${err.message}`);
-});
 
 let runBarVisualizer;
 let drawBarsUpdate;
@@ -217,6 +211,51 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
   currentVisualizer = visualizerType
 });
 
+ipcRenderer.on('changeAudioSource', function (event, args) {
+  toggleSettingsMenu()
+});
+
+const toggleSettingsMenu = () => {
+  if (document.getElementById('settingsPanel').style.display !== 'block') {
+    document.getElementById('settingsPanel').style.display = 'block'
+    navigator.mediaDevices.enumerateDevices().then((e) => {
+      if (e.length) {
+        const list = document.getElementById('settingsList')
+        while (list.firstChild) {
+          list.removeChild(list.firstChild);
+        }
+        e.forEach((device, i) => {
+          list.appendChild(document.createElement('li')).id = device.kind + device.deviceId
+          document.getElementById(device.kind + device.deviceId).innerText = `${device.kind === 'audioinput' ? '🎙️ — ' : '🔈 — '} ${device.label}`
+          document.getElementById(device.kind + device.deviceId).onclick = () => {changeSource(device)}
+          if (device.kind + device.deviceId === constraints.audio.kind + constraints.audio.deviceId) {
+            document.getElementById(device.kind + device.deviceId).style.color = '#0099ff'
+          }
+        })
+      }
+      //else show there are no inputs
+      }).catch((err) => {
+      console.error(`${err.name}: ${err.message}`);
+    });
+  } else {
+    document.getElementById('settingsPanel').style.display = 'none'
+  }
+}
+
+const changeSource = (device) => {
+  document.getElementById(constraints.audio.kind + constraints.audio.deviceId).style.color = '#fff'
+  constraints.audio.deviceId = device.deviceId
+  constraints.audio.kind = device.kind
+  document.getElementById(constraints.audio.kind + constraints.audio.deviceId).style.color = '#0099ff'
+  navigator.mediaDevices.getUserMedia(constraints)
+  .then((mediaStream) => {
+    setAudioSource(mediaStream)
+  })
+  .catch((err) => {
+    console.error(`${err.name}: ${err.message}`);
+  });
+}
+
 function updateGUI() {
   document.getElementById('canvas1').setAttribute('height', window.innerHeight);
   document.getElementById('canvas1').setAttribute('width', window.innerWidth);
@@ -226,4 +265,10 @@ window.addEventListener('DOMContentLoaded', () => {
   setBarVisualizer()
   currentVisualizer = 'bars'
   setInterval(updateGUI, 250);
+
+  document.getElementById('settingsPanel').onclick = (e) => {
+    if(e.target.id === 'settingsPanel') {
+      toggleSettingsMenu()
+    }
+  }
 })

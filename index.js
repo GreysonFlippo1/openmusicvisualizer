@@ -10,6 +10,12 @@ const template = [
       label: app.name,
       submenu: [
          {
+            label: 'Change Audio Source',
+            click: () => {
+               changeAudioSource()
+            },
+         },
+         {
             label: 'Preferences'
          },
          {
@@ -103,6 +109,10 @@ let contents
 
 const changeVisualizer = (type) => {
   contents.send('changeVisualizer', [type])
+}
+
+const changeAudioSource = () => {
+   contents.send('changeAudioSource', [true])
 }
 
 const createWindow = () => {
