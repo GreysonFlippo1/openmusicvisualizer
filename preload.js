@@ -274,7 +274,7 @@ function updateGUI() {
 
 window.addEventListener('DOMContentLoaded', () => {
   setBarVisualizer()
-  currentVisualizer = 'bars'
+  currentVisualizer = 'centeredBars'
   setInterval(updateGUI, 250);
 
   document.getElementById('settingsPanel').onclick = (e) => {

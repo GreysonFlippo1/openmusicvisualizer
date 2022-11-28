@@ -67,12 +67,6 @@ const template = [
                }
             }
          ]
-         },
-         {
-            type: 'separator'
-         },
-         {
-            role: 'togglefullscreen'
          }
       ]
    },
@@ -80,6 +74,23 @@ const template = [
    {
       label: 'Options',
       submenu: [
+         ...(!isMac ? [{
+            label: app.name,
+            submenu: [
+               {
+                  label: 'Change Audio Source',
+                  click: () => {
+                     changeAudioSource()
+                  },
+               },
+               {
+                  label: 'Settings'
+               },
+               {
+                  type: 'separator'
+               },
+            ]
+         }] : []),
          {
             label: 'Extra Tall Bars',
             type: 'checkbox',
