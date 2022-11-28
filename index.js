@@ -43,19 +43,25 @@ const template = [
             label: 'Visualizer Type',
             submenu: [
             {
-               label: 'Bars',
+               label: 'Bouncy Bars',
                click: () => {
                   changeVisualizer('bars')
                }
             },
             {
-               label: 'Wave',
+               label: 'Centered Bars',
+               click: () => {
+                  changeVisualizer('centeredBars')
+               }
+            },
+            {
+               label: 'Wiggly Waveform',
                click: () => {
                   changeVisualizer('wave')
                }
             },
             {
-               label: 'Circle',
+               label: 'Circular Waveform',
                click: () => {
                   changeVisualizer('circle')
                }
@@ -142,7 +148,6 @@ const createWindow = () => {
     width: 1920,
     height: 1080,
     title: 'Open Music Visualizer',
-   //  transparent: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     },

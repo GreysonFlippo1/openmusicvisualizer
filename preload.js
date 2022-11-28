@@ -107,6 +107,7 @@ function barVis() {
         const frequencyData = mediaElement.frequencyData[formula];
         const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
         bar.style.height = pop + 'px';
+        bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0;
         bar.style.backgroundColor = barColor;
       }
     }
@@ -198,6 +199,9 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
   const visualizerType = args[0]
   switch (visualizerType) {
     case 'bars':
+      setBarVisualizer()
+      break
+    case 'centeredBars':
       setBarVisualizer()
       break
     case 'wave':
