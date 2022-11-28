@@ -163,6 +163,13 @@ const constraints = {
   },
 };
 
+navigator.mediaDevices.enumerateDevices().then((devices) => {
+  constraints.audio.deviceId = devices[0].deviceId
+  constraints.audio.kind = devices[0].kind
+  }).catch((err) => {
+  console.error(`${err.name}: ${err.message}`);
+});
+
 navigator.mediaDevices.getUserMedia(constraints)
   .then((mediaStream) => {
     setAudioSource(mediaStream)
