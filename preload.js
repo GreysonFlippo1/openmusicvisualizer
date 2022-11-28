@@ -6,7 +6,8 @@ const userPreferences = {
   colorCycle: true,
   primary_color: 'white',
   secondary_color: 'white',
-  max_height: 100,
+  tall_bars: true,
+  boosted_audio: false,
   smoothingTimeConstant: 0,
   fftUni: 8192,
   barWidth: 12,
@@ -104,7 +105,7 @@ function barVis() {
         const bar = document.getElementById('bar' + i)
         const formula = Math.ceil(Math.pow(i, 1.25));
         const frequencyData = mediaElement.frequencyData[formula];
-        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.max_height / 100);
+        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
         bar.style.height = pop + 'px';
         bar.style.backgroundColor = barColor;
       }
@@ -136,7 +137,7 @@ function waveVis() {
     let lasty = HEIGHT / 2;
 
     for (let i = mediaElement.bufferLength / 2; i < mediaElement.bufferLength; i++) {
-      const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.max_height / 100)) + 1;
+      const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1)) + 1;
       const radius2 = radius1 + (v * v * 150) * (HEIGHT / 1500);
       const y = v * HEIGHT / 2;
       if (currentVisualizer === 'circle') {
@@ -213,6 +214,11 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
 
 ipcRenderer.on('changeAudioSource', function (event, args) {
   toggleSettingsMenu()
+});
+
+ipcRenderer.on('changeSettings', function (event, args) {
+  userPreferences.tall_bars = args[0]
+  userPreferences.boosted_audio = args[1]
 });
 
 const toggleSettingsMenu = () => {

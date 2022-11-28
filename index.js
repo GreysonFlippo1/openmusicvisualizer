@@ -75,11 +75,23 @@ const template = [
       label: 'Options',
       submenu: [
          {
-            label: 'Option1'
+            label: 'Extra Tall Bars',
+            type: 'checkbox',
+            checked: true,
+            click: () => {
+               settings.tall_bars = !settings.tall_bars
+               changeSettings()
+            }
          },
          {
-            label: 'Option2'
-         }
+            label: 'Boost Input Signal',
+            type: 'checkbox',
+            checked: false,
+            click: () => {
+               settings.boosted_audio = !settings.boosted_audio
+               changeSettings()
+            }
+         },
       ]
    },
 
@@ -113,6 +125,15 @@ const changeVisualizer = (type) => {
 
 const changeAudioSource = () => {
    contents.send('changeAudioSource', [true])
+}
+
+const settings = {
+   tall_bars: true,
+   boosted_audio: false,
+}
+
+const changeSettings = () => {
+   contents.send('changeSettings', Object.keys(settings).map(setting => settings[setting]))
 }
 
 const createWindow = () => {
