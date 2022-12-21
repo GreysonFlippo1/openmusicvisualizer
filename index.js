@@ -86,6 +86,18 @@ const template = [
             }
          ] : []),
          {
+            label: 'Boost Input Signal',
+            type: 'checkbox',
+            checked: false,
+            click: () => {
+               settings.boosted_audio = !settings.boosted_audio
+               changeSettings()
+            }
+         },
+         {
+            type: 'separator'
+         },
+         {
             label: 'Extra Tall Bars',
             type: 'checkbox',
             checked: true,
@@ -95,11 +107,11 @@ const template = [
             }
          },
          {
-            label: 'Boost Input Signal',
+            label: 'Rounded Bars',
             type: 'checkbox',
             checked: false,
             click: () => {
-               settings.boosted_audio = !settings.boosted_audio
+               settings.rounded_bars = !settings.rounded_bars
                changeSettings()
             }
          },
@@ -144,6 +156,7 @@ const changeAudioSource = () => {
 const settings = {
    tall_bars: true,
    boosted_audio: false,
+   rounded_bars: false,
 }
 
 const changeSettings = () => {

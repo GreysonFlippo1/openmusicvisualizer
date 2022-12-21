@@ -7,6 +7,7 @@ const userPreferences = {
   primary_color: 'white',
   secondary_color: 'white',
   tall_bars: true,
+  rounded_bars: false,
   boosted_audio: false,
   smoothingTimeConstant: 0,
   fftUni: 8192,
@@ -30,8 +31,10 @@ function drawBars() {
         bars.classList.add('bars');
         document.body.appendChild(bars);
       }
-      document.getElementById('bar' + i).style.left = (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1) + 'px';
-      document.getElementById('bar' + i).style.backgroundColor = userPreferences.primary_color;
+      const bar = document.getElementById('bar' + i)
+      bar.style.left = (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1) + 'px';
+      bar.style.backgroundColor = userPreferences.primary_color;
+      if (userPreferences.rounded_bars) bar.style.borderRadius = '6px';
     }
   } else {
     for (let i = barAmntTemp; i < barAmnt; i++) {
@@ -109,6 +112,11 @@ function barVis() {
         bar.style.height = pop + 'px';
         bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0;
         bar.style.backgroundColor = barColor;
+        if (userPreferences.rounded_bars) {
+          bar.style.borderRadius = '6px';
+        } else {
+          bar.style.borderRadius = '0px';
+        }
       }
     }
   }
@@ -230,6 +238,7 @@ ipcRenderer.on('changeAudioSource', function (event, args) {
 ipcRenderer.on('changeSettings', function (event, args) {
   userPreferences.tall_bars = args[0]
   userPreferences.boosted_audio = args[1]
+  userPreferences.rounded_bars = args[2]
 });
 
 const toggleSettingsMenu = () => {
