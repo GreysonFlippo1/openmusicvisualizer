@@ -3,7 +3,7 @@
 const { ipcRenderer } = require('electron');
 
 const userPreferences = {
-  colorCycle: true,
+  color_cycle: true,
   primary_color: 'white',
   secondary_color: 'white',
   tall_bars: true,
@@ -82,41 +82,105 @@ let red = 255;
 let green = 0;
 let blue = 0;
 
-function cycleColor() {
-  if (red == 255) {
-    if (blue > 0) { blue--; } else { green++; }
+const redPhase = (colors, increment) => {
+  if (colors.blue > 0) {
+    colors.blue -= increment;
+    if (colors.blue < 0) {
+      colors.green = 0 - colors.blue
+      colors.blue = 0
+    }
+  } else {
+    colors.green += increment;
+    if (colors.green > 255) {
+      colors.red = 255 - (colors.green - 255)
+      colors.green = 255
+    }
   }
 
-  if (green == 255) {
-    if (red > 0) { red--; } else { blue++; }
+  return colors
+}
+
+const greenPhase = (colors, increment) => {
+  if (colors.red > 0) {
+    colors.red -= increment;
+    if (colors.red < 0) {
+      colors.blue = 0 - colors.red
+      colors.red = 0
+    }
+  } else {
+    colors.blue += increment;
+    if (colors.blue > 255) {
+      colors.green = 255 - (colors.blue - 255)
+      colors.blue = 255
+    }
   }
 
-  if (blue == 255) {
-    if (green > 0) { green--; } else { red++; }
+  return colors
+}
+
+
+const bluePhase = (colors, increment) => {
+  if (colors.green > 0) {
+    colors.green -= increment;
+    if (colors.green < 0) {
+      colors.red = 0 - colors.green
+      colors.green = 0
+    }
+  } else {
+    colors.red += increment;
+    if (colors.red > 255) {
+      colors.blue = 255 - (colors.red - 255)
+      colors.red = 255
+    }
   }
-  return 'rgb(' + red + ',' + green + ',' + blue + ')';
+
+  return colors
+}
+
+function cycleColor(update = false, increment = 1) {
+
+  increment = Math.ceil(increment)
+
+  let colors = {
+    red: red,
+    green: green,
+    blue: blue
+  }
+
+  if (colors.red == 255) {
+    colors = redPhase(colors, increment)
+  } else if (colors.green == 255) {
+    colors = greenPhase(colors, increment)
+  } else if (colors.blue == 255) {
+    colors = bluePhase(colors, increment)
+  }
+
+  if (update) {
+    red = colors.red
+    green = colors.green
+    blue = colors.blue
+  }
+
+  return 'rgb(' + colors.red + ',' + colors.green + ',' + colors.blue + ')';
 }
 
 let currentVisualizer = 'none'
 
 function barVis() {
   if(mediaElement.analyser) {
+    cycleColor(true)
     mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData);
-    const barColor = userPreferences.colorCycle ? cycleColor() : userPreferences.primary_color;
+    let borderRadius = userPreferences.rounded_bars ? '6px' : '0px'
     for (let i = 0; i < barAmnt; i++) {
       if (vizReady == barAmnt) {
         const bar = document.getElementById('bar' + i)
         const formula = Math.ceil(Math.pow(i, 1.25));
         const frequencyData = mediaElement.frequencyData[formula];
         const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
-        bar.style.height = pop + 'px';
+        const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color;bar.style.height = pop + 'px';
         bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0;
         bar.style.backgroundColor = barColor;
-        if (userPreferences.rounded_bars) {
-          bar.style.borderRadius = '6px';
-        } else {
-          bar.style.borderRadius = '0px';
-        }
+        bar.style.borderRadius = borderRadius;
       }
     }
   }
@@ -131,7 +195,7 @@ function waveVis() {
     canvasCtx.height = HEIGHT;
     canvasCtx.fillStyle = 'rgba(0, 0, 0, 1)';
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-    canvasCtx.strokeStyle = userPreferences.colorCycle ? cycleColor() : userPreferences.primary_color;
+    canvasCtx.strokeStyle = userPreferences.color_cycle ? cycleColor(true) : userPreferences.primary_color;
     canvasCtx.lineWidth = 3000 / window.innerHeight;
     canvasCtx.shadowColor = '#000';
     canvasCtx.shadowBlur = 1;
@@ -239,6 +303,7 @@ ipcRenderer.on('changeSettings', function (event, args) {
   userPreferences.tall_bars = args[0]
   userPreferences.boosted_audio = args[1]
   userPreferences.rounded_bars = args[2]
+  userPreferences.color_cycle = args[3]
 });
 
 const toggleSettingsMenu = () => {

@@ -9,18 +9,18 @@ const template = [
    ...(isMac ? [{
       label: app.name,
       submenu: [
-         {
-            label: 'Change Audio Source',
-            click: () => {
-               changeAudioSource()
-            },
-         },
-         {
-            label: 'Preferences'
-         },
-         {
-            type: 'separator'
-         },
+         // {
+         //    label: 'Change Audio Source',
+         //    click: () => {
+         //       changeAudioSource()
+         //    },
+         // },
+         // {
+         //    label: 'Preferences'
+         // },
+         // {
+         //    type: 'separator'
+         // },
          {
             role: 'quit',
             label: 'Quit Open Music Visualizer'
@@ -74,23 +74,38 @@ const template = [
    {
       label: 'Options',
       submenu: [
-         ...(!isMac ? [
-            {
-               label: 'Change Audio Source',
-               click: () => {
-                  changeAudioSource()
-               }
-            },
-            {
-               label: 'Settings'
+         // ...(!isMac ? [
+         //    {
+         //       label: 'Change Audio Source',
+         //       click: () => {
+         //          changeAudioSource()
+         //       }
+         //    },
+         //    {
+         //       label: 'Settings'
+         //    }
+         // ] : []),
+         {
+            label: 'Change Audio Source',
+            click: () => {
+               changeAudioSource()
             }
-         ] : []),
+         },
          {
             label: 'Boost Input Signal',
             type: 'checkbox',
             checked: false,
             click: () => {
                settings.boosted_audio = !settings.boosted_audio
+               changeSettings()
+            }
+         },
+         {
+            label: 'Color Cycle',
+            type: 'checkbox',
+            checked: true,
+            click: () => {
+               settings.color_cycle = !settings.color_cycle
                changeSettings()
             }
          },
@@ -157,6 +172,7 @@ const settings = {
    tall_bars: true,
    boosted_audio: false,
    rounded_bars: false,
+   color_cycle: true,
 }
 
 const changeSettings = () => {
