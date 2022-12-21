@@ -191,9 +191,10 @@ function waveVis() {
   const WIDTH = window.innerWidth;
   const HEIGHT = window.innerHeight;
     mediaElement.analyser.getByteTimeDomainData(mediaElement.dataArray);
+    canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
     canvasCtx.width = WIDTH;
     canvasCtx.height = HEIGHT;
-    canvasCtx.fillStyle = 'rgba(0, 0, 0, 1)';
+    canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
     canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
     canvasCtx.strokeStyle = userPreferences.color_cycle ? cycleColor(true) : userPreferences.primary_color;
     canvasCtx.lineWidth = 3000 / window.innerHeight;
