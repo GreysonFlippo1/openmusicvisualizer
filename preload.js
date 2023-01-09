@@ -176,8 +176,14 @@ function barVis() {
         const bar = document.getElementById('bar' + i)
         const formula = Math.ceil(Math.pow(i, 1.25));
         const frequencyData = mediaElement.frequencyData[formula];
-        const pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
+        let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
         const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color;bar.style.height = pop + 'px';
+        if (userPreferences.rounded_bars) {
+          if (pop < 12) {
+            pop = 12
+          }
+        }
+        bar.style.minHeight = userPreferences.rounded_bars ? 12 + 'px' : 0;
         bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0;
         bar.style.backgroundColor = barColor;
         bar.style.borderRadius = borderRadius;
@@ -190,42 +196,46 @@ function waveVis() {
   const canvasCtx = document.getElementById('canvas1').getContext('2d');
   const WIDTH = window.innerWidth;
   const HEIGHT = window.innerHeight;
-    mediaElement.analyser.getByteTimeDomainData(mediaElement.dataArray);
-    canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-    canvasCtx.width = WIDTH;
-    canvasCtx.height = HEIGHT;
-    canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
-    canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-    canvasCtx.strokeStyle = userPreferences.color_cycle ? cycleColor(true) : userPreferences.primary_color;
-    canvasCtx.lineWidth = 3000 / window.innerHeight;
-    canvasCtx.shadowColor = '#000';
-    canvasCtx.shadowBlur = 1;
-    canvasCtx.shadowOffsetX = 0;
-    canvasCtx.shadowOffsetY = 0;
-    if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3; }
-    canvasCtx.beginPath();
-    const sliceWidth = WIDTH / mediaElement.bufferLength * 4;
-    const radius1 = HEIGHT / 4;
-    let x = 0;
-    let lastx = WIDTH / 2 + radius1;
-    let lasty = HEIGHT / 2;
+  mediaElement.analyser.getByteTimeDomainData(mediaElement.dataArray);
+  canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+  canvasCtx.width = WIDTH;
+  canvasCtx.height = HEIGHT;
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)';
+  canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+  canvasCtx.strokeStyle = userPreferences.color_cycle ? cycleColor(true) : userPreferences.primary_color;
+  canvasCtx.lineWidth = 3000 / window.innerHeight;
+  canvasCtx.shadowColor = '#000';
+  canvasCtx.shadowBlur = 1;
+  canvasCtx.shadowOffsetX = 0;
+  canvasCtx.shadowOffsetY = 0;
+  if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3; }
+  canvasCtx.beginPath();
+  const sliceWidth = WIDTH / mediaElement.bufferLength * 4;
+  const radius1 = HEIGHT / 4;
+  let x = 0;
+  let lastx = WIDTH / 2 + radius1;
+  let lasty = HEIGHT / 2;
 
-    for (let i = mediaElement.bufferLength / 2; i < mediaElement.bufferLength; i++) {
-      const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1)) + 1;
-      const radius2 = radius1 + (v * v * 150) * (HEIGHT / 1500);
-      const y = v * HEIGHT / 2;
-      if (currentVisualizer === 'circle') {
-          canvasCtx.lineTo((WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength * 2), (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength * 2) * -1);
-      } else {
-          canvasCtx.lineTo(x, y);
-      }
-      lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength);
-      lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength) * -1;
-      x += sliceWidth;
+  for (let i = mediaElement.bufferLength / 2; i < mediaElement.bufferLength; i++) {
+    const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1)) + 1;
+    const radius2 = radius1 + (v * v * 150) * (HEIGHT / 1500);
+    const y = v * HEIGHT / 2;
+    if (currentVisualizer === 'circle') {
+        canvasCtx.lineTo((WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength * 2), (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength * 2) * -1);
+    } else {
+        canvasCtx.lineTo(x, y);
     }
-    if (currentVisualizer === 'circle') { canvasCtx.lineTo(lastx, lasty); }
-    canvasCtx.stroke();
-    if (currentVisualizer === 'wave' || currentVisualizer === 'circle') { window.requestAnimationFrame(waveVis); }
+    lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength);
+    lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength) * -1;
+    x += sliceWidth;
+  }
+  if (currentVisualizer === 'circle') { canvasCtx.lineTo(lastx, lasty); }
+  canvasCtx.stroke();
+  if (currentVisualizer === 'wave' || currentVisualizer === 'circle') { window.requestAnimationFrame(waveVis); }
+}
+
+function bubbleVis() {
+  
 }
 
 const constraints = {
@@ -275,6 +285,18 @@ const setWaveVisualizer = () => {
   }
 }
 
+const setBubbleVisualizer = () => {
+  // if (currentVisualizer !== 'wave' && currentVisualizer !== 'circle') {
+  //   document.getElementById('canvas1').style.display = 'block'
+  //   if (currentVisualizer === 'bars' || currentVisualizer === 'centeredBars') {
+  //     clearInterval(drawBarsUpdate)
+  //     clearInterval(runBarVisualizer)
+  //     removeBars()
+  //   }
+  //   window.requestAnimationFrame(bubbleViz)
+  // }
+}
+
 ipcRenderer.on('changeVisualizer', function (event, args) {
   const visualizerType = args[0]
   switch (visualizerType) {
@@ -289,6 +311,12 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
       break
     case 'circle':
       setWaveVisualizer()
+      break
+    case 'concentricCircles':
+      setBubbleVisualizer()
+      break
+    case 'bubbles':
+      setBubbleVisualizer()
       break
     default:
       break

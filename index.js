@@ -65,6 +65,18 @@ const template = [
                click: () => {
                   changeVisualizer('circle')
                }
+            },
+            {
+               label: 'Concentric Circles',
+               click: () => {
+                  changeVisualizer('concentricCircles')
+               }
+            },
+            {
+               label: 'Bubbles',
+               click: () => {
+                  changeVisualizer('bubbles')
+               }
             }
          ]
          }
