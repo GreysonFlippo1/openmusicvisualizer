@@ -1,6 +1,7 @@
 // All the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
 const { ipcRenderer } = require('electron');
+const bouncy_bars = require('./visualizers/bouncy_bars');
 
 const userPreferences = {
   color_cycle: true,
@@ -14,45 +15,45 @@ const userPreferences = {
   barWidth: 12,
   barSpacing: 2,
 };
+console.log('here')
+// let barAmnt = 0;
+// let vizReady = 0;
 
-let barAmnt = 0;
-let vizReady = 0;
+// function drawBars() {
+//   let barAmntTemp = 0;
+//   for (let i = 0; i < window.innerWidth + userPreferences.barSpacing + (userPreferences.barWidth / 2); i += (userPreferences.barWidth + userPreferences.barSpacing)) { barAmntTemp++; }
+//   if (barAmntTemp > barAmnt) {
+//     for (let i = 0; i < barAmntTemp; i++) {
+//       if (barAmntTemp > barAmnt) {
+//         const bars = document.createElement('div');
+//         bars.setAttribute('id', 'bar' + i);
+//         bars.classList.add('bars');
+//         document.body.appendChild(bars);
+//       }
+//       const bar = document.getElementById('bar' + i)
+//       bar.style.left = (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1) + 'px';
+//       bar.style.backgroundColor = userPreferences.primary_color;
+//       if (userPreferences.rounded_bars) bar.style.borderRadius = '6px';
+//     }
+//   } else {
+//     for (let i = barAmntTemp; i < barAmnt; i++) {
+//       document.getElementById('bar' + i).remove();
+//     }
+//   }
+
+//   barAmnt = barAmntTemp;
+//   vizReady = barAmnt;
+// }
+
+// function removeBars() {
+//   for (let i = 0; i < barAmnt; i++) {
+//     document.getElementById('bar' + i).remove();
+//   }
+//   barAmnt = 0;
+//   vizReady = barAmnt;
+// }
 
 let mediaElement = {};
-
-function drawBars() {
-  let barAmntTemp = 0;
-  for (let i = 0; i < window.innerWidth + userPreferences.barSpacing + (userPreferences.barWidth / 2); i += (userPreferences.barWidth + userPreferences.barSpacing)) { barAmntTemp++; }
-  if (barAmntTemp > barAmnt) {
-    for (let i = 0; i < barAmntTemp; i++) {
-      if (barAmntTemp > barAmnt) {
-        const bars = document.createElement('div');
-        bars.setAttribute('id', 'bar' + i);
-        bars.classList.add('bars');
-        document.body.appendChild(bars);
-      }
-      const bar = document.getElementById('bar' + i)
-      bar.style.left = (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1) + 'px';
-      bar.style.backgroundColor = userPreferences.primary_color;
-      if (userPreferences.rounded_bars) bar.style.borderRadius = '6px';
-    }
-  } else {
-    for (let i = barAmntTemp; i < barAmnt; i++) {
-      document.getElementById('bar' + i).remove();
-    }
-  }
-
-  barAmnt = barAmntTemp;
-  vizReady = barAmnt;
-}
-
-function removeBars() {
-  for (let i = 0; i < barAmnt; i++) {
-    document.getElementById('bar' + i).remove();
-  }
-  barAmnt = 0;
-  vizReady = barAmnt;
-}
 
 function setAudioSource(stream) {
 
@@ -78,119 +79,119 @@ function setAudioSource(stream) {
   };
 }
 
-let red = 255;
-let green = 0;
-let blue = 0;
+// let red = 255;
+// let green = 0;
+// let blue = 0;
 
-const redPhase = (colors, increment) => {
-  if (colors.blue > 0) {
-    colors.blue -= increment;
-    if (colors.blue < 0) {
-      colors.green = 0 - colors.blue
-      colors.blue = 0
-    }
-  } else {
-    colors.green += increment;
-    if (colors.green > 255) {
-      colors.red = 255 - (colors.green - 255)
-      colors.green = 255
-    }
-  }
+// const redPhase = (colors, increment) => {
+//   if (colors.blue > 0) {
+//     colors.blue -= increment;
+//     if (colors.blue < 0) {
+//       colors.green = 0 - colors.blue
+//       colors.blue = 0
+//     }
+//   } else {
+//     colors.green += increment;
+//     if (colors.green > 255) {
+//       colors.red = 255 - (colors.green - 255)
+//       colors.green = 255
+//     }
+//   }
 
-  return colors
-}
+//   return colors
+// }
 
-const greenPhase = (colors, increment) => {
-  if (colors.red > 0) {
-    colors.red -= increment;
-    if (colors.red < 0) {
-      colors.blue = 0 - colors.red
-      colors.red = 0
-    }
-  } else {
-    colors.blue += increment;
-    if (colors.blue > 255) {
-      colors.green = 255 - (colors.blue - 255)
-      colors.blue = 255
-    }
-  }
+// const greenPhase = (colors, increment) => {
+//   if (colors.red > 0) {
+//     colors.red -= increment;
+//     if (colors.red < 0) {
+//       colors.blue = 0 - colors.red
+//       colors.red = 0
+//     }
+//   } else {
+//     colors.blue += increment;
+//     if (colors.blue > 255) {
+//       colors.green = 255 - (colors.blue - 255)
+//       colors.blue = 255
+//     }
+//   }
 
-  return colors
-}
+//   return colors
+// }
 
 
-const bluePhase = (colors, increment) => {
-  if (colors.green > 0) {
-    colors.green -= increment;
-    if (colors.green < 0) {
-      colors.red = 0 - colors.green
-      colors.green = 0
-    }
-  } else {
-    colors.red += increment;
-    if (colors.red > 255) {
-      colors.blue = 255 - (colors.red - 255)
-      colors.red = 255
-    }
-  }
+// const bluePhase = (colors, increment) => {
+//   if (colors.green > 0) {
+//     colors.green -= increment;
+//     if (colors.green < 0) {
+//       colors.red = 0 - colors.green
+//       colors.green = 0
+//     }
+//   } else {
+//     colors.red += increment;
+//     if (colors.red > 255) {
+//       colors.blue = 255 - (colors.red - 255)
+//       colors.red = 255
+//     }
+//   }
 
-  return colors
-}
+//   return colors
+// }
 
-function cycleColor(update = false, increment = 1) {
+// function cycleColor(update = false, increment = 1) {
 
-  increment = Math.ceil(increment)
+//   increment = Math.ceil(increment)
 
-  let colors = {
-    red: red,
-    green: green,
-    blue: blue
-  }
+//   let colors = {
+//     red: red,
+//     green: green,
+//     blue: blue
+//   }
 
-  if (colors.red == 255) {
-    colors = redPhase(colors, increment)
-  } else if (colors.green == 255) {
-    colors = greenPhase(colors, increment)
-  } else if (colors.blue == 255) {
-    colors = bluePhase(colors, increment)
-  }
+//   if (colors.red == 255) {
+//     colors = redPhase(colors, increment)
+//   } else if (colors.green == 255) {
+//     colors = greenPhase(colors, increment)
+//   } else if (colors.blue == 255) {
+//     colors = bluePhase(colors, increment)
+//   }
 
-  if (update) {
-    red = colors.red
-    green = colors.green
-    blue = colors.blue
-  }
+//   if (update) {
+//     red = colors.red
+//     green = colors.green
+//     blue = colors.blue
+//   }
 
-  return 'rgb(' + colors.red + ',' + colors.green + ',' + colors.blue + ')';
-}
+//   return 'rgb(' + colors.red + ',' + colors.green + ',' + colors.blue + ')';
+// }
 
 let currentVisualizer = 'none'
 
-function barVis() {
-  if(mediaElement.analyser) {
-    cycleColor(true)
-    mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData);
-    let borderRadius = userPreferences.rounded_bars ? '6px' : '0px'
-    for (let i = 0; i < barAmnt; i++) {
-      if (vizReady == barAmnt) {
-        const bar = document.getElementById('bar' + i)
-        const formula = Math.ceil(Math.pow(i, 1.25));
-        const frequencyData = mediaElement.frequencyData[formula];
-        let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
-        const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color;bar.style.height = pop + 'px';
-        if (userPreferences.rounded_bars) {
-          if (pop < 12) {
-            pop = 12
-          }
-        }
-        bar.style.minHeight = userPreferences.rounded_bars ? 12 + 'px' : 0;
-        bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0;
-        bar.style.backgroundColor = barColor;
-        bar.style.borderRadius = borderRadius;
-      }
-    }
-  }
-}
+// function barVis() {
+//   if(mediaElement.analyser) {
+//     cycleColor(true)
+//     mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData);
+//     let borderRadius = userPreferences.rounded_bars ? '6px' : '0px'
+//     for (let i = 0; i < barAmnt; i++) {
+//       if (vizReady == barAmnt) {
+//         const bar = document.getElementById('bar' + i)
+//         const formula = Math.ceil(Math.pow(i, 1.25));
+//         const frequencyData = mediaElement.frequencyData[formula];
+//         let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1);
+//         const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color;bar.style.height = pop + 'px';
+//         if (userPreferences.rounded_bars) {
+//           if (pop < 12) {
+//             pop = 12
+//           }
+//         }
+//         bar.style.minHeight = userPreferences.rounded_bars ? 12 + 'px' : 0;
+//         bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0;
+//         bar.style.backgroundColor = barColor;
+//         bar.style.borderRadius = borderRadius;
+//       }
+//     }
+//   }
+// }
 
 function waveVis() {
   const canvasCtx = document.getElementById('canvas1').getContext('2d');
@@ -265,12 +266,13 @@ let runBarVisualizer;
 let drawBarsUpdate;
 
 const setBarVisualizer = () => {
-  if (currentVisualizer !== 'bars' && currentVisualizer !== 'centeredBars') {
-    document.getElementById('canvas1').style.display = 'none'
-    drawBars()
-    runBarVisualizer = setInterval(barVis, 17)
-    drawBarsUpdate = setInterval(drawBars, 500)
-  }
+  bouncy_bars.start(mediaElement, {})
+  // if (currentVisualizer !== 'bars' && currentVisualizer !== 'centeredBars') {
+  //   document.getElementById('canvas1').style.display = 'none'
+  //   drawBars()
+  //   runBarVisualizer = setInterval(barVis, 17)
+  //   drawBarsUpdate = setInterval(drawBars, 500)
+  // }
 }
 
 const setWaveVisualizer = () => {
@@ -384,7 +386,7 @@ function updateGUI() {
 
 window.addEventListener('DOMContentLoaded', () => {
   setBarVisualizer()
-  currentVisualizer = 'centeredBars'
+  currentVisualizer = 'bars'
   setInterval(updateGUI, 250);
 
   document.getElementById('settingsPanel').onclick = (e) => {
