@@ -1,3 +1,4 @@
+/* eslint-disable multiline-ternary */
 
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, Menu, ipcMain } = require('electron')
@@ -6,168 +7,168 @@ const path = require('path')
 const isMac = process.platform === 'darwin'
 
 const template = [
-   ...(isMac ? [{
-      label: app.name,
-      submenu: [
-         // {
-         //    label: 'Change Audio Source',
-         //    click: () => {
-         //       changeAudioSource()
-         //    },
-         // },
-         // {
-         //    label: 'Preferences'
-         // },
-         // {
-         //    type: 'separator'
-         // },
-         {
-            role: 'quit',
-            label: 'Quit Open Music Visualizer'
-         }
-      ]
-   }] : []),
-   {
-      label: 'View',
-      submenu: [
-         {
-            role: 'reload'
-         },
-         {
-            role: 'toggledevtools'
-         },
-         {
-            type: 'separator'
-         },
-         {
-            label: 'Visualizer Type',
-            submenu: [
-            {
-               label: 'Bouncy Bars',
-               click: () => {
-                  changeVisualizer('bars')
-               }
-            },
-            {
-               label: 'Centered Bars',
-               click: () => {
-                  changeVisualizer('centeredBars')
-               }
-            },
-            {
-               label: 'Wiggly Waveform',
-               click: () => {
-                  changeVisualizer('wave')
-               }
-            },
-            {
-               label: 'Circular Waveform',
-               click: () => {
-                  changeVisualizer('circle')
-               }
-            },
-            {
-               label: 'Concentric Circles',
-               click: () => {
-                  changeVisualizer('concentricCircles')
-               }
-            },
-            {
-               label: 'Bubbles',
-               click: () => {
-                  changeVisualizer('bubbles')
-               }
+  ...(isMac ? [{
+    label: app.name,
+    submenu: [
+      // {
+      //    label: 'Change Audio Source',
+      //    click: () => {
+      //       changeAudioSource()
+      //    },
+      // },
+      // {
+      //    label: 'Preferences'
+      // },
+      // {
+      //    type: 'separator'
+      // },
+      {
+        role: 'quit',
+        label: 'Quit Open Music Visualizer'
+      }
+    ]
+  }] : []),
+  {
+    label: 'View',
+    submenu: [
+      {
+        role: 'reload'
+      },
+      {
+        role: 'toggledevtools'
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Visualizer Type',
+        submenu: [
+          {
+            label: 'Bouncy Bars',
+            click: () => {
+              changeVisualizer('bars')
             }
-         ]
-         }
-      ]
-   },
+          },
+          {
+            label: 'Centered Bars',
+            click: () => {
+              changeVisualizer('centeredBars')
+            }
+          },
+          {
+            label: 'Wiggly Waveform',
+            click: () => {
+              changeVisualizer('wave')
+            }
+          },
+          {
+            label: 'Circular Waveform',
+            click: () => {
+              changeVisualizer('circle')
+            }
+          },
+          {
+            label: 'Concentric Circles',
+            click: () => {
+              changeVisualizer('concentricCircles')
+            }
+          },
+          {
+            label: 'Bubbles',
+            click: () => {
+              changeVisualizer('bubbles')
+            }
+          }
+        ]
+      }
+    ]
+  },
 
-   {
-      label: 'Options',
-      submenu: [
-         // ...(!isMac ? [
-         //    {
-         //       label: 'Change Audio Source',
-         //       click: () => {
-         //          changeAudioSource()
-         //       }
-         //    },
-         //    {
-         //       label: 'Settings'
-         //    }
-         // ] : []),
-         {
-            label: 'Change Audio Source',
-            click: () => {
-               changeAudioSource()
-            }
-         },
-         {
-            label: 'Boost Input Signal',
-            type: 'checkbox',
-            checked: false,
-            click: () => {
-               settings.boosted_audio = !settings.boosted_audio
-               changeSettings()
-            }
-         },
-         {
-            label: 'Color Cycle',
-            type: 'checkbox',
-            checked: true,
-            click: () => {
-               settings.color_cycle = !settings.color_cycle
-               changeSettings()
-            }
-         },
-         {
-            type: 'separator'
-         },
-         {
-            label: 'Extra Tall Bars',
-            type: 'checkbox',
-            checked: true,
-            click: () => {
-               settings.tall_bars = !settings.tall_bars
-               changeSettings()
-            }
-         },
-         {
-            label: 'Rounded Bars',
-            type: 'checkbox',
-            checked: false,
-            click: () => {
-               settings.rounded_bars = !settings.rounded_bars
-               changeSettings()
-            }
-         },
-      ]
-   },
+  {
+    label: 'Options',
+    submenu: [
+      // ...(!isMac ? [
+      //    {
+      //       label: 'Change Audio Source',
+      //       click: () => {
+      //          changeAudioSource()
+      //       }
+      //    },
+      //    {
+      //       label: 'Settings'
+      //    }
+      // ] : []),
+      {
+        label: 'Change Audio Source',
+        click: () => {
+          changeAudioSource()
+        }
+      },
+      {
+        label: 'Boost Input Signal',
+        type: 'checkbox',
+        checked: false,
+        click: () => {
+          settings.boosted_audio = !settings.boosted_audio
+          changeSettings()
+        }
+      },
+      {
+        label: 'Color Cycle',
+        type: 'checkbox',
+        checked: true,
+        click: () => {
+          settings.color_cycle = !settings.color_cycle
+          changeSettings()
+        }
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Extra Tall Bars',
+        type: 'checkbox',
+        checked: true,
+        click: () => {
+          settings.tall_bars = !settings.tall_bars
+          changeSettings()
+        }
+      },
+      {
+        label: 'Rounded Bars',
+        type: 'checkbox',
+        checked: false,
+        click: () => {
+          settings.rounded_bars = !settings.rounded_bars
+          changeSettings()
+        }
+      },
+    ]
+  },
 
-   {
-      role: 'window',
-      submenu: [
-         {
-            role: 'togglefullscreen'
-         },
-         {
-            role: 'minimize'
-         },
-         {
-            role: 'close'
-         }
-      ]
-   },
+  {
+    role: 'window',
+    submenu: [
+      {
+        role: 'togglefullscreen'
+      },
+      {
+        role: 'minimize'
+      },
+      {
+        role: 'close'
+      }
+    ]
+  },
 
-   {
-      role: 'help',
-      submenu: [
-         {
-            label: 'Learn More'
-         }
-      ]
-   }
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'Learn More'
+      }
+    ]
+  }
 ]
 
 let contents
@@ -177,18 +178,18 @@ const changeVisualizer = (type) => {
 }
 
 const changeAudioSource = () => {
-   contents.send('changeAudioSource', [true])
+  contents.send('changeAudioSource', [true])
 }
 
 const settings = {
-   tall_bars: true,
-   boosted_audio: false,
-   rounded_bars: false,
-   color_cycle: true,
+  tall_bars: true,
+  boosted_audio: false,
+  rounded_bars: false,
+  color_cycle: true,
 }
 
 const changeSettings = () => {
-   contents.send('changeSettings', Object.keys(settings).map(setting => settings[setting]))
+  contents.send('changeSettings', Object.keys(settings).map(setting => settings[setting]))
 }
 
 const createWindow = () => {
