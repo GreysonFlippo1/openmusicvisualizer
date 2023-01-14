@@ -142,7 +142,7 @@ const template = [
           settings.rounded_bars = !settings.rounded_bars
           changeSettings()
         }
-      },
+      }
     ]
   },
 
@@ -185,7 +185,7 @@ const settings = {
   tall_bars: true,
   boosted_audio: false,
   rounded_bars: false,
-  color_cycle: true,
+  color_cycle: true
 }
 
 const changeSettings = () => {
@@ -203,7 +203,7 @@ const createWindow = () => {
     frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
-    },
+    }
   })
 
   contents = mainWindow.webContents
@@ -213,7 +213,7 @@ const createWindow = () => {
   })
 
   const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu) 
+  Menu.setApplicationMenu(menu)
 
   // and load the index.html of the app.
   mainWindow.loadFile('index.html')
