@@ -36,10 +36,13 @@ const template = [
       },
       {
         role: 'toggledevtools'
-      },
-      {
-        type: 'separator'
-      },
+      }
+    ]
+  },
+
+  {
+    label: 'Options',
+    submenu: [
       {
         label: 'Visualizer Type',
         submenu: [
@@ -80,29 +83,15 @@ const template = [
             }
           }
         ]
-      }
-    ]
-  },
-
-  {
-    label: 'Options',
-    submenu: [
-      // ...(!isMac ? [
-      //    {
-      //       label: 'Change Audio Source',
-      //       click: () => {
-      //          changeAudioSource()
-      //       }
-      //    },
-      //    {
-      //       label: 'Settings'
-      //    }
-      // ] : []),
+      },
       {
         label: 'Change Audio Source',
         click: () => {
           changeAudioSource()
         }
+      },
+      {
+        type: 'separator'
       },
       {
         label: 'Boost Input Signal',
