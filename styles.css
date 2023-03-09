@@ -1,5 +1,5 @@
 body {
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(0,0,0,1);
     color: white;
     font-family: sans-serif;
     overflow-x: hidden;
@@ -15,6 +15,7 @@ body {
     -webkit-app-region: drag;
     transition: background-color .2s;
     z-index: 10000;
+    display: none;
 }
 
 #titleBar:hover{

@@ -187,9 +187,9 @@ const createWindow = () => {
     width: 1920,
     height: 1080,
     title: 'Open Music Visualizer',
-    transparent: true,
-    titleBarStyle: 'hiddenInset',
-    frame: false,
+    // transparent: true,
+    // titleBarStyle: 'hiddenInset',
+    // frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
