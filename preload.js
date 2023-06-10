@@ -15,44 +15,7 @@ const userPreferences = {
   barSpacing: 2
 }
 
-let barAmnt = 0
-let vizReady = 0
-
 let mediaElement = {}
-
-function drawBars () {
-  let barAmntTemp = 0
-  for (let i = 0; i < window.innerWidth + userPreferences.barSpacing + (userPreferences.barWidth / 2); i += (userPreferences.barWidth + userPreferences.barSpacing)) { barAmntTemp++ }
-  if (barAmntTemp > barAmnt) {
-    for (let i = 0; i < barAmntTemp; i++) {
-      if (barAmntTemp > barAmnt) {
-        const bars = document.createElement('div')
-        bars.setAttribute('id', 'bar' + i)
-        bars.classList.add('bars')
-        document.body.appendChild(bars)
-      }
-      const bar = document.getElementById('bar' + i)
-      bar.style.left = (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1) + 'px'
-      bar.style.backgroundColor = userPreferences.primary_color
-      if (userPreferences.rounded_bars) bar.style.borderRadius = '6px'
-    }
-  } else {
-    for (let i = barAmntTemp; i < barAmnt; i++) {
-      document.getElementById('bar' + i).remove()
-    }
-  }
-
-  barAmnt = barAmntTemp
-  vizReady = barAmnt
-}
-
-function removeBars () {
-  for (let i = 0; i < barAmnt; i++) {
-    document.getElementById('bar' + i).remove()
-  }
-  barAmnt = 0
-  vizReady = barAmnt
-}
 
 function setAudioSource (stream) {
   const audioCtx = new AudioContext()
@@ -164,39 +127,61 @@ function cycleColor (update = false, increment = 1) {
 let currentVisualizer = 'none'
 
 function barVis () {
+  const canvas = document.getElementById('canvas1')
+  const canvasCtx = canvas.getContext('2d', { alpha: false })
+  const dpr = window.devicePixelRatio
+  const rect = canvas.getBoundingClientRect()
+  const WIDTH = rect.width
+  const HEIGHT = rect.height
+  canvas.width = rect.width * dpr
+  canvas.height = rect.height * dpr
+  canvasCtx.scale(dpr, dpr)
+  canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
+  canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.beginPath()
+
   if (mediaElement.analyser) {
     cycleColor(true)
     mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData)
-    const borderRadius = userPreferences.rounded_bars ? '6px' : '0px'
+    const borderRadius = userPreferences.rounded_bars ? '6' : '0'
+    const barAmnt = (WIDTH / (userPreferences.barWidth + userPreferences.barSpacing)) + 1
     for (let i = 0; i < barAmnt; i++) {
-      if (vizReady === barAmnt) {
-        const bar = document.getElementById('bar' + i)
-        const formula = Math.ceil(Math.pow(i, 1.25))
-        const frequencyData = mediaElement.frequencyData[formula]
-        let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (window.innerHeight * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1)
-        const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color; bar.style.height = pop + 'px'
-        if (userPreferences.rounded_bars) {
-          if (pop < 12) {
-            pop = 12
-          }
-        }
-        bar.style.minHeight = userPreferences.rounded_bars ? 12 + 'px' : 0
-        bar.style.bottom = currentVisualizer === 'centeredBars' ? ((window.innerHeight * 0.5) - (pop * 0.5)) + 'px' : 0
-        bar.style.backgroundColor = barColor
-        bar.style.borderRadius = borderRadius
+      const formula = Math.ceil(Math.pow(i, 1.25))
+      const frequencyData = mediaElement.frequencyData[formula]
+      let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (HEIGHT * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1)
+      const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color
+      if (userPreferences.rounded_bars && pop < 12) {
+        pop = 12
       }
+
+      canvasCtx.roundRect(
+        (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1), // x
+        currentVisualizer === 'centeredBars' ? ((HEIGHT * 0.5) - (pop * 0.5)) : (HEIGHT - pop), // y
+        userPreferences.barWidth, // width
+        pop, // height
+        borderRadius // border radius
+      )
+      canvasCtx.fillStyle = barColor
+      canvasCtx.fill()
     }
   }
+  if (currentVisualizer === 'bars' || currentVisualizer === 'centeredBars') { window.requestAnimationFrame(barVis) }
 }
 
 function waveVis () {
-  const canvasCtx = document.getElementById('canvas1').getContext('2d')
-  const WIDTH = window.innerWidth
-  const HEIGHT = window.innerHeight
+  const canvas = document.getElementById('canvas1')
+  const canvasCtx = canvas.getContext('2d', { alpha: false })
+  const dpr = window.devicePixelRatio
+  const rect = canvas.getBoundingClientRect()
+  const WIDTH = rect.width
+  const HEIGHT = rect.height
+  canvas.width = rect.width * dpr
+  canvas.height = rect.height * dpr
+  canvasCtx.scale(dpr, dpr)
+
   mediaElement.analyser.getByteTimeDomainData(mediaElement.dataArray)
   canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
-  canvasCtx.width = WIDTH
-  canvasCtx.height = HEIGHT
   canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
   canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
   canvasCtx.strokeStyle = userPreferences.color_cycle ? cycleColor(true) : userPreferences.primary_color
@@ -258,28 +243,12 @@ navigator.mediaDevices.getUserMedia(constraints)
     console.error(`${err.name}: ${err.message}`)
   })
 
-let runBarVisualizer
-let drawBarsUpdate
-
 const setBarVisualizer = () => {
-  if (currentVisualizer !== 'bars' && currentVisualizer !== 'centeredBars') {
-    document.getElementById('canvas1').style.display = 'none'
-    drawBars()
-    runBarVisualizer = setInterval(barVis, 17)
-    drawBarsUpdate = setInterval(drawBars, 500)
-  }
+  window.requestAnimationFrame(barVis)
 }
 
 const setWaveVisualizer = () => {
-  if (currentVisualizer !== 'wave' && currentVisualizer !== 'circle') {
-    document.getElementById('canvas1').style.display = 'block'
-    if (currentVisualizer === 'bars' || currentVisualizer === 'centeredBars') {
-      clearInterval(drawBarsUpdate)
-      clearInterval(runBarVisualizer)
-      removeBars()
-    }
-    window.requestAnimationFrame(waveVis)
-  }
+  window.requestAnimationFrame(waveVis)
 }
 
 const setBubbleVisualizer = () => {
@@ -380,6 +349,7 @@ function updateGUI () {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  updateGUI()
   setBarVisualizer()
   currentVisualizer = 'centeredBars'
   setInterval(updateGUI, 250)
