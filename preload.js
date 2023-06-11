@@ -291,7 +291,8 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
 })
 
 ipcRenderer.on('changeAudioSource', function (event, args) {
-  toggleSettingsMenu()
+  const isMac = args[1]
+  toggleSettingsMenu(isMac)
 })
 
 ipcRenderer.on('changeSettings', function (event, args) {
@@ -301,28 +302,46 @@ ipcRenderer.on('changeSettings', function (event, args) {
   userPreferences.color_cycle = args[3]
 })
 
-const toggleSettingsMenu = () => {
+const toggleSettingsMenu = (isMac) => {
   if (document.getElementById('settingsPanel').style.display !== 'block') {
     document.getElementById('settingsPanel').style.display = 'block'
-    navigator.mediaDevices.enumerateDevices().then((e) => {
-      if (e.length) {
-        const list = document.getElementById('settingsList')
-        while (list.firstChild) {
-          list.removeChild(list.firstChild)
-        }
-        e.forEach((device, i) => {
-          list.appendChild(document.createElement('li')).id = device.kind + device.deviceId
-          document.getElementById(device.kind + device.deviceId).innerText = `${device.kind === 'audioinput' ? '🎙️ — ' : '🔈 — '} ${device.label}`
-          document.getElementById(device.kind + device.deviceId).onclick = () => { changeSource(device) }
-          if (device.kind + device.deviceId === constraints.audio.kind + constraints.audio.deviceId) {
-            document.getElementById(device.kind + device.deviceId).style.color = '#0099ff'
+    if (isMac) {
+      navigator.mediaDevices.enumerateDevices().then((e) => {
+        if (e.length) {
+          const list = document.getElementById('settingsList')
+          while (list.firstChild) {
+            list.removeChild(list.firstChild)
           }
-        })
+          e.forEach((device, i) => {
+            list.appendChild(document.createElement('li')).id = device.kind + device.deviceId
+            document.getElementById(device.kind + device.deviceId).innerText = `${device.kind === 'audioinput' ? '🎙️ — ' : '🔈 — '} ${device.label}`
+            document.getElementById(device.kind + device.deviceId).onclick = () => { changeSource(device) }
+            if (device.kind + device.deviceId === constraints.audio.kind + constraints.audio.deviceId) {
+              document.getElementById(device.kind + device.deviceId).style.color = '#0099ff'
+            }
+          })
+        }
+        // else show there are no inputs
+      }).catch((err) => {
+        console.error(`${err.name}: ${err.message}`)
+      })
+    } else {
+      const constraints = {
+        audio: {
+          mandatory: {
+            chromeMediaSource: 'desktop'
+          }
+        },
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop'
+          }
+        }
       }
-      // else show there are no inputs
-    }).catch((err) => {
-      console.error(`${err.name}: ${err.message}`)
-    })
+      navigator.mediaDevices.getUserMedia(constraints).then((e) => {
+        console.log(e)
+      })
+    }
   } else {
     document.getElementById('settingsPanel').style.display = 'none'
   }

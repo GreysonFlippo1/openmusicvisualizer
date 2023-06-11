@@ -167,7 +167,7 @@ const changeVisualizer = (type) => {
 }
 
 const changeAudioSource = () => {
-  contents.send('changeAudioSource', [true])
+  contents.send('changeAudioSource', [true, isMac])
 }
 
 const settings = {
