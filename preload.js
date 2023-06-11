@@ -338,9 +338,13 @@ const toggleSettingsMenu = (isMac) => {
           }
         }
       }
-      navigator.mediaDevices.getUserMedia(constraints).then((e) => {
-        console.log(e)
-      })
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then((mediaStream) => {
+          setAudioSource(mediaStream)
+        })
+        .catch((err) => {
+          console.error(`${err.name}: ${err.message}`)
+        })
     }
   } else {
     document.getElementById('settingsPanel').style.display = 'none'
