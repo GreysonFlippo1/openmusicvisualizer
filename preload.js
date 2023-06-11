@@ -228,20 +228,46 @@ const constraints = {
   }
 }
 
-navigator.mediaDevices.enumerateDevices().then((devices) => {
-  constraints.audio.deviceId = devices[0].deviceId
-  constraints.audio.kind = devices[0].kind
-}).catch((err) => {
-  console.error(`${err.name}: ${err.message}`)
-})
+ipcRenderer.on('initAudio', function (event, args) {
+  const isMac = args[1]
 
-navigator.mediaDevices.getUserMedia(constraints)
-  .then((mediaStream) => {
-    setAudioSource(mediaStream)
-  })
-  .catch((err) => {
-    console.error(`${err.name}: ${err.message}`)
-  })
+  if (isMac) {
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      constraints.audio.deviceId = devices[0].deviceId
+      constraints.audio.kind = devices[0].kind
+    }).catch((err) => {
+      console.error(`${err.name}: ${err.message}`)
+    })
+
+    navigator.mediaDevices.getUserMedia(constraints)
+      .then((mediaStream) => {
+        setAudioSource(mediaStream)
+      })
+      .catch((err) => {
+        console.error(`${err.name}: ${err.message}`)
+      })
+  } else {
+    const winConstraints = {
+      audio: {
+        mandatory: {
+          chromeMediaSource: 'desktop'
+        }
+      },
+      video: {
+        mandatory: {
+          chromeMediaSource: 'desktop'
+        }
+      }
+    }
+    navigator.mediaDevices.getUserMedia(winConstraints)
+      .then((mediaStream) => {
+        setAudioSource(mediaStream)
+      })
+      .catch((err) => {
+        console.error(`${err.name}: ${err.message}`)
+      })
+  }
+})
 
 const setBarVisualizer = () => {
   window.requestAnimationFrame(barVis)
@@ -291,8 +317,7 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
 })
 
 ipcRenderer.on('changeAudioSource', function (event, args) {
-  const isMac = args[1]
-  toggleSettingsMenu(isMac)
+  toggleSettingsMenu()
 })
 
 ipcRenderer.on('changeSettings', function (event, args) {
@@ -305,47 +330,25 @@ ipcRenderer.on('changeSettings', function (event, args) {
 const toggleSettingsMenu = (isMac) => {
   if (document.getElementById('settingsPanel').style.display !== 'block') {
     document.getElementById('settingsPanel').style.display = 'block'
-    if (isMac) {
-      navigator.mediaDevices.enumerateDevices().then((e) => {
-        if (e.length) {
-          const list = document.getElementById('settingsList')
-          while (list.firstChild) {
-            list.removeChild(list.firstChild)
-          }
-          e.forEach((device, i) => {
-            list.appendChild(document.createElement('li')).id = device.kind + device.deviceId
-            document.getElementById(device.kind + device.deviceId).innerText = `${device.kind === 'audioinput' ? '🎙️ — ' : '🔈 — '} ${device.label}`
-            document.getElementById(device.kind + device.deviceId).onclick = () => { changeSource(device) }
-            if (device.kind + device.deviceId === constraints.audio.kind + constraints.audio.deviceId) {
-              document.getElementById(device.kind + device.deviceId).style.color = '#0099ff'
-            }
-          })
+    navigator.mediaDevices.enumerateDevices().then((e) => {
+      if (e.length) {
+        const list = document.getElementById('settingsList')
+        while (list.firstChild) {
+          list.removeChild(list.firstChild)
         }
-        // else show there are no inputs
-      }).catch((err) => {
-        console.error(`${err.name}: ${err.message}`)
-      })
-    } else {
-      const constraints = {
-        audio: {
-          mandatory: {
-            chromeMediaSource: 'desktop'
+        e.forEach((device, i) => {
+          list.appendChild(document.createElement('li')).id = device.kind + device.deviceId
+          document.getElementById(device.kind + device.deviceId).innerText = `${device.kind === 'audioinput' ? '🎙️ — ' : '🔈 — '} ${device.label}`
+          document.getElementById(device.kind + device.deviceId).onclick = () => { changeSource(device) }
+          if (device.kind + device.deviceId === constraints.audio.kind + constraints.audio.deviceId) {
+            document.getElementById(device.kind + device.deviceId).style.color = '#0099ff'
           }
-        },
-        video: {
-          mandatory: {
-            chromeMediaSource: 'desktop'
-          }
-        }
+        })
       }
-      navigator.mediaDevices.getUserMedia(constraints)
-        .then((mediaStream) => {
-          setAudioSource(mediaStream)
-        })
-        .catch((err) => {
-          console.error(`${err.name}: ${err.message}`)
-        })
-    }
+      // else show there are no inputs
+    }).catch((err) => {
+      console.error(`${err.name}: ${err.message}`)
+    })
   } else {
     document.getElementById('settingsPanel').style.display = 'none'
   }

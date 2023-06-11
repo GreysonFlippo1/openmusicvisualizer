@@ -84,12 +84,12 @@ const template = [
           }
         ]
       },
-      {
+      ...(isMac ? [{
         label: 'Change Audio Source',
         click: () => {
           changeAudioSource()
         }
-      },
+      }] : []),
       {
         type: 'separator'
       },
@@ -170,6 +170,10 @@ const changeAudioSource = () => {
   contents.send('changeAudioSource', [true, isMac])
 }
 
+const initAudio = () => {
+  contents.send('initAudio', [true, isMac])
+}
+
 const settings = {
   tall_bars: true,
   boosted_audio: false,
@@ -195,16 +199,20 @@ const createWindow = () => {
     }
   })
 
-  desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-    for (const source of sources) {
-      if (source.name === 'Electron') {
-        mainWindow.webContents.send('SET_SOURCE', source.id)
-        return
+  if (!isMac) {
+    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+      for (const source of sources) {
+        if (source.name === 'Electron') {
+          mainWindow.webContents.send('SET_SOURCE', source.id)
+          return
+        }
       }
-    }
-  })
+    })
+  }
 
   contents = mainWindow.webContents
+
+  initAudio()
 
   contents.on('did-finish-load', () => {
     contents.setAudioMuted(true)
