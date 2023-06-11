@@ -126,7 +126,7 @@ const template = [
       {
         label: 'Rounded Bars',
         type: 'checkbox',
-        checked: false,
+        checked: true,
         click: () => {
           settings.rounded_bars = !settings.rounded_bars
           changeSettings()
@@ -177,7 +177,7 @@ const initAudio = () => {
 const settings = {
   tall_bars: true,
   boosted_audio: false,
-  rounded_bars: false,
+  rounded_bars: true,
   color_cycle: true
 }
 

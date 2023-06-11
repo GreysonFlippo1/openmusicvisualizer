@@ -7,7 +7,7 @@ const userPreferences = {
   primary_color: 'white',
   secondary_color: 'white',
   tall_bars: true,
-  rounded_bars: false,
+  rounded_bars: true,
   boosted_audio: false,
   smoothingTimeConstant: 0,
   fftUni: 8192,
@@ -139,22 +139,24 @@ function barVis () {
   canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
   canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
   canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
-  canvasCtx.beginPath()
 
   if (mediaElement.analyser) {
-    cycleColor(true)
     mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData)
     const borderRadius = userPreferences.rounded_bars ? '6' : '0'
     const barAmnt = (WIDTH / (userPreferences.barWidth + userPreferences.barSpacing)) + 1
+
+    const gradient = canvasCtx.createLinearGradient(0, 0, WIDTH, 0)
+    gradient.addColorStop(0, cycleColor(true))
+    gradient.addColorStop(1, cycleColor(false, 100))
+
     for (let i = 0; i < barAmnt; i++) {
       const formula = Math.ceil(Math.pow(i, 1.25))
       const frequencyData = mediaElement.frequencyData[formula]
       let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (HEIGHT * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1)
-      const barColor = userPreferences.color_cycle ? cycleColor(false, i) : userPreferences.primary_color
       if (userPreferences.rounded_bars && pop < 12) {
         pop = 12
       }
-
+      canvasCtx.beginPath()
       canvasCtx.roundRect(
         (userPreferences.barWidth + userPreferences.barSpacing) * (i - 1), // x
         currentVisualizer === 'centeredBars' ? ((HEIGHT * 0.5) - (pop * 0.5)) : (HEIGHT - pop), // y
@@ -162,7 +164,8 @@ function barVis () {
         pop, // height
         borderRadius // border radius
       )
-      canvasCtx.fillStyle = barColor
+
+      canvasCtx.fillStyle = userPreferences.color_cycle ? gradient : userPreferences.primary_color
       canvasCtx.fill()
     }
   }
@@ -184,8 +187,13 @@ function waveVis () {
   canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
   canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
   canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
-  canvasCtx.strokeStyle = userPreferences.color_cycle ? cycleColor(true) : userPreferences.primary_color
-  canvasCtx.lineWidth = 3000 / window.innerHeight
+
+  const gradient = canvasCtx.createLinearGradient(0, 0, WIDTH, 0)
+  gradient.addColorStop(0, cycleColor(true))
+  gradient.addColorStop(1, cycleColor(false, 100))
+
+  canvasCtx.strokeStyle = userPreferences.color_cycle ? gradient : userPreferences.primary_color
+  canvasCtx.lineWidth = 3000 / HEIGHT
   canvasCtx.shadowColor = '#000'
   canvasCtx.shadowBlur = 1
   canvasCtx.shadowOffsetX = 0
@@ -214,6 +222,44 @@ function waveVis () {
   if (currentVisualizer === 'circle') { canvasCtx.lineTo(lastx, lasty) }
   canvasCtx.stroke()
   if (currentVisualizer === 'wave' || currentVisualizer === 'circle') { window.requestAnimationFrame(waveVis) }
+}
+
+function concentricCirclesViz () {
+  const canvas = document.getElementById('canvas1')
+  const canvasCtx = canvas.getContext('2d', { alpha: false })
+  const dpr = window.devicePixelRatio
+  const rect = canvas.getBoundingClientRect()
+  const WIDTH = rect.width
+  const HEIGHT = rect.height
+  canvas.width = rect.width * dpr
+  canvas.height = rect.height * dpr
+  canvasCtx.scale(dpr, dpr)
+
+  canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
+  canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
+
+  const gradient = canvasCtx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 5, WIDTH / 2, HEIGHT / 2, HEIGHT / 3)
+  gradient.addColorStop(0, cycleColor(true))
+  gradient.addColorStop(1, cycleColor(false, 200))
+
+  if (mediaElement.analyser) {
+    mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData)
+    const circleAmount = 8
+    const largestCircle = 12
+    const maxSize = HEIGHT / 2
+    for (let i = 0; i < circleAmount; i++) {
+      const formula = Math.ceil(Math.pow(i, 2.5))
+      const frequencyData = mediaElement.frequencyData[formula]
+      const circleColor = userPreferences.color_cycle ? gradient : userPreferences.primary_color
+      canvasCtx.strokeStyle = circleColor
+      canvasCtx.lineWidth = largestCircle - ((largestCircle * i) / circleAmount)
+      canvasCtx.beginPath()
+      canvasCtx.arc(WIDTH / 2, HEIGHT / 2, ((frequencyData * frequencyData) / (255 * 255)) * maxSize, 0, 2 * Math.PI, true)
+      canvasCtx.stroke()
+    }
+  }
+  if (currentVisualizer === 'concentricCircles') { window.requestAnimationFrame(concentricCirclesViz) }
 }
 
 // function bubbleVis () {
@@ -277,16 +323,12 @@ const setWaveVisualizer = () => {
   window.requestAnimationFrame(waveVis)
 }
 
+const setConcentricCircles = () => {
+  window.requestAnimationFrame(concentricCirclesViz)
+}
+
 const setBubbleVisualizer = () => {
-  // if (currentVisualizer !== 'wave' && currentVisualizer !== 'circle') {
-  //   document.getElementById('canvas1').style.display = 'block'
-  //   if (currentVisualizer === 'bars' || currentVisualizer === 'centeredBars') {
-  //     clearInterval(drawBarsUpdate)
-  //     clearInterval(runBarVisualizer)
-  //     removeBars()
-  //   }
-  //   window.requestAnimationFrame(bubbleViz)
-  // }
+  // window.requestAnimationFrame(bubbleViz)
 }
 
 ipcRenderer.on('changeVisualizer', function (event, args) {
@@ -305,7 +347,7 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
       setWaveVisualizer()
       break
     case 'concentricCircles':
-      setBubbleVisualizer()
+      setConcentricCircles()
       break
     case 'bubbles':
       setBubbleVisualizer()
@@ -378,6 +420,8 @@ window.addEventListener('DOMContentLoaded', () => {
   updateGUI()
   setBarVisualizer()
   currentVisualizer = 'centeredBars'
+  // setConcentricCircles()
+  // currentVisualizer = 'concentricCircles'
   setInterval(updateGUI, 250)
 
   document.getElementById('settingsPanel').onclick = (e) => {
