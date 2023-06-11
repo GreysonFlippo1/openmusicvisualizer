@@ -305,7 +305,7 @@ ipcRenderer.on('changeSettings', function (event, args) {
 const toggleSettingsMenu = (isMac) => {
   if (document.getElementById('settingsPanel').style.display !== 'block') {
     document.getElementById('settingsPanel').style.display = 'block'
-    if (isMac) {
+    if (!isMac) {
       navigator.mediaDevices.enumerateDevices().then((e) => {
         if (e.length) {
           const list = document.getElementById('settingsList')

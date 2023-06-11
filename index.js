@@ -1,7 +1,7 @@
 /* eslint-disable multiline-ternary */
 
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, Menu, ipcMain } = require('electron')
+const { app, BrowserWindow, Menu, ipcMain, desktopCapturer } = require('electron')
 const path = require('path')
 
 const isMac = process.platform === 'darwin'
@@ -192,6 +192,15 @@ const createWindow = () => {
     // frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
+    }
+  })
+
+  desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+    for (const source of sources) {
+      if (source.name === 'Electron') {
+        mainWindow.webContents.send('SET_SOURCE', source.id)
+        return
+      }
     }
   })
 
