@@ -239,7 +239,9 @@ function concentricCirclesVis () {
   canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
   canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
 
-  buildVisualizerBGRGB(canvasCtx, WIDTH, HEIGHT)
+  if (userPreferences.color_cycle) {
+    buildVisualizerBGRGB(canvasCtx, WIDTH, HEIGHT)
+  }
 
   const gradient = canvasCtx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 5, WIDTH / 2, HEIGHT / 2, HEIGHT / 3)
   gradient.addColorStop(0, cycleColor(true))
