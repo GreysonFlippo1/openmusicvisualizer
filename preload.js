@@ -98,7 +98,7 @@ const bluePhase = (colors, increment) => {
   return colors
 }
 
-function cycleColor (update = false, increment = 1) {
+function cycleColor (update = false, increment = 1, alpha = 1) {
   increment = Math.ceil(increment)
 
   let colors = {
@@ -121,7 +121,7 @@ function cycleColor (update = false, increment = 1) {
     blue = colors.blue
   }
 
-  return 'rgb(' + colors.red + ',' + colors.green + ',' + colors.blue + ')'
+  return 'rgba(' + colors.red + ',' + colors.green + ',' + colors.blue + ',' + alpha + ')'
 }
 
 let currentVisualizer = 'none'
@@ -224,7 +224,7 @@ function waveVis () {
   if (currentVisualizer === 'wave' || currentVisualizer === 'circle') { window.requestAnimationFrame(waveVis) }
 }
 
-function concentricCirclesViz () {
+function concentricCirclesVis () {
   const canvas = document.getElementById('canvas1')
   const canvasCtx = canvas.getContext('2d', { alpha: false })
   const dpr = window.devicePixelRatio
@@ -238,6 +238,8 @@ function concentricCirclesViz () {
   canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
   canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
   canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
+
+  buildVisualizerBGRGB(canvasCtx, WIDTH, HEIGHT)
 
   const gradient = canvasCtx.createRadialGradient(WIDTH / 2, HEIGHT / 2, 5, WIDTH / 2, HEIGHT / 2, HEIGHT / 3)
   gradient.addColorStop(0, cycleColor(true))
@@ -255,16 +257,230 @@ function concentricCirclesViz () {
       canvasCtx.strokeStyle = circleColor
       canvasCtx.lineWidth = largestCircle - ((largestCircle * i) / circleAmount)
       canvasCtx.beginPath()
-      canvasCtx.arc(WIDTH / 2, HEIGHT / 2, ((frequencyData * frequencyData) / (255 * 255)) * maxSize, 0, 2 * Math.PI, true)
+      canvasCtx.arc(WIDTH / 2, HEIGHT / 2, ((frequencyData * frequencyData) / (255 * 255)) * maxSize * (userPreferences.boosted_audio ? 2 : 1), 0, 2 * Math.PI, true)
       canvasCtx.stroke()
     }
   }
-  if (currentVisualizer === 'concentricCircles') { window.requestAnimationFrame(concentricCirclesViz) }
+  buildVisualizerStripes(canvasCtx, WIDTH, HEIGHT, 2)
+  if (currentVisualizer === 'concentricCircles') { window.requestAnimationFrame(concentricCirclesVis) }
 }
 
-// function bubbleVis () {
+const bubbeProperties = [
+  {
+    outer: 'rgb(54, 54, 165)',
+    inner: 'rgba(54, 54, 165, .7)',
+    rgb: '54, 54, 165',
+    location: [0, 0],
+    destination: [0, 0],
+    size: 400
+  },
+  {
+    outer: 'rgb(181, 30, 30)',
+    inner: 'rgba(181, 30, 30, .5)',
+    rgb: '181, 30, 30',
+    location: [0, 0],
+    destination: [0, 0],
+    size: 280
+  },
+  {
+    outer: 'rgb(171, 171, 75)',
+    inner: 'rgba(171, 171, 75, .5)',
+    rgb: '171, 171, 75',
+    location: [0, 0],
+    destination: [0, 0],
+    size: 280
+  },
+  {
+    outer: 'rgb(133, 37, 133)',
+    inner: 'rgba(133, 37, 133, .5)',
+    rgb: '133, 37, 133',
+    location: [0, 0],
+    destination: [0, 0],
+    size: 200
+  },
+  {
+    outer: 'rgb(93, 156, 156)',
+    inner: 'rgba(93, 156, 156, .5)',
+    rgb: '93, 156, 156',
+    location: [0, 0],
+    destination: [0, 0],
+    size: 100
+  },
+  {
+    outer: 'rgb(109, 61, 138)',
+    inner: 'rgba(109, 61, 138, .5)',
+    rgb: '109, 61, 138',
+    location: [0, 0],
+    destination: [0, 0],
+    size: 180
+  }
+]
 
-// }
+function bubbleVis () {
+  const canvas = document.getElementById('canvas1')
+  const canvasCtx = canvas.getContext('2d', { alpha: false })
+  const dpr = window.devicePixelRatio
+  const rect = canvas.getBoundingClientRect()
+  const WIDTH = rect.width
+  const HEIGHT = rect.height
+  canvas.width = rect.width * dpr
+  canvas.height = rect.height * dpr
+  canvasCtx.scale(dpr, dpr)
+
+  canvasCtx.clearRect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0)'
+  canvasCtx.fillRect(0, 0, WIDTH, HEIGHT)
+
+  if (mediaElement.analyser) {
+    mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData)
+    const circleAmount = 6
+    for (let i = 0; i < circleAmount; i++) {
+      const formula = Math.ceil(Math.pow(i, 4))
+      const frequencyData = mediaElement.frequencyData[formula]
+
+      const bubbleCoords = bubbeProperties[i].location
+      // set initial bubble properties
+      if (bubbleCoords[0] === 0 && bubbleCoords[1] === 0) {
+        bubbleCoords[0] = Math.floor(WIDTH * Math.random())
+        bubbleCoords[1] = Math.floor(HEIGHT * Math.random())
+      }
+      if (!bubbeProperties[i].size) {
+        bubbeProperties[i].size = Math.floor(200 * Math.random()) + 100
+      }
+
+      const sensitivity = 50
+      const explodeSize = 200
+
+      const pop = (sensitivity * (frequencyData / 255)) * (userPreferences.boosted_audio ? 2 : 1)
+
+      // explosion
+      if ((frequencyData / 255) > 0.5 && !bubbeProperties[i].explode) {
+        // start explode
+        bubbeProperties[i].explode = bubbeProperties[i].size + sensitivity
+      } else if (bubbeProperties[i].explode) {
+        bubbeProperties[i].explode += 6
+        const opacity = (1 - (bubbeProperties[i].explode / (bubbeProperties[i].size + sensitivity + explodeSize))) * 3
+        const bubbleSize = bubbeProperties[i].explode
+        const fillGradient = canvasCtx.createRadialGradient(bubbleCoords[0], bubbleCoords[1], 5, bubbleCoords[0], bubbleCoords[1], bubbleSize)
+        fillGradient.addColorStop(0, 'rgba(0,0,0,0)')
+        fillGradient.addColorStop(1, `rgba(${bubbeProperties[i].rgb},${opacity / 2})`)
+
+        canvasCtx.strokeStyle = `rgba(${bubbeProperties[i].rgb},${opacity})`
+        canvasCtx.lineWidth = 5
+        canvasCtx.fillStyle = fillGradient
+        canvasCtx.beginPath()
+        canvasCtx.arc(bubbleCoords[0], bubbleCoords[1], bubbleSize, 0, 2 * Math.PI, true)
+        canvasCtx.fill()
+        canvasCtx.stroke()
+        if (bubbeProperties[i].explode >= bubbeProperties[i].size + sensitivity + explodeSize) {
+          bubbeProperties[i].explode = undefined
+        }
+      }
+
+      const bubbleSize = bubbeProperties[i].size + pop
+      const fillGradient = canvasCtx.createRadialGradient(bubbleCoords[0], bubbleCoords[1], 5, bubbleCoords[0], bubbleCoords[1], bubbleSize)
+      fillGradient.addColorStop(0, 'rgba(0,0,0,0)')
+      fillGradient.addColorStop(1, bubbeProperties[i].inner)
+
+      canvasCtx.strokeStyle = bubbeProperties[i].outer
+      canvasCtx.lineWidth = 5
+      canvasCtx.fillStyle = fillGradient
+      canvasCtx.beginPath()
+      canvasCtx.arc(bubbleCoords[0], bubbleCoords[1], bubbleSize, 0, 2 * Math.PI, true)
+      canvasCtx.fill()
+      canvasCtx.stroke()
+
+      // move the bubbles
+      const bubbleDestination = bubbeProperties[i].destination
+      const compareCoord0 = Math.round(bubbleCoords[0])
+      const compareCoord1 = Math.round(bubbleCoords[1])
+      if ((bubbleDestination[0] === 0 && bubbleDestination[1] === 0) || compareCoord0 === bubbleDestination[0] || compareCoord1 === bubbleDestination[1]) {
+        // get new destination
+        bubbleDestination[0] = Math.round((Math.random() * (WIDTH + 200)) - 100)
+        bubbleDestination[1] = Math.round((Math.random() * (HEIGHT + 200)) - 100)
+      } else {
+        const speed = 1 - (bubbleSize / 410)
+        if (bubbleCoords[0] < bubbleDestination[0]) {
+          bubbleCoords[0] += speed
+        } else {
+          bubbleCoords[0] -= speed
+        }
+        if (bubbleCoords[1] < bubbleDestination[1]) {
+          bubbleCoords[1] += speed
+        } else {
+          bubbleCoords[1] -= speed
+        }
+      }
+    }
+  }
+
+  buildVisualizerFGRed(canvasCtx, WIDTH, HEIGHT)
+  buildVisualizerStripes(canvasCtx, WIDTH, HEIGHT)
+
+  if (currentVisualizer === 'bubbles') { window.requestAnimationFrame(bubbleVis) }
+}
+
+const buildVisualizerFGRed = (canvasCtx, WIDTH, HEIGHT) => {
+  const bgGradient1 = canvasCtx.createLinearGradient(0, 0, WIDTH, 0)
+  bgGradient1.addColorStop(0, 'rgba(255, 100, 0, 0.7)')
+  bgGradient1.addColorStop(0.5, 'rgba(0,0,0,0)')
+  bgGradient1.addColorStop(1, 'rgba(255, 100, 0, 0.4)')
+
+  canvasCtx.beginPath()
+  canvasCtx.rect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = bgGradient1
+  canvasCtx.fill()
+
+  const bgGradient2 = canvasCtx.createLinearGradient(0, 0, 0, HEIGHT)
+  bgGradient2.addColorStop(0, 'rgba(255, 0, 0, 0.5)')
+  bgGradient2.addColorStop(0.5, 'rgba(0,0,0,0)')
+  bgGradient2.addColorStop(1, 'rgba(0, 0, 0, 0.3)')
+
+  canvasCtx.beginPath()
+  canvasCtx.rect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = bgGradient2
+  canvasCtx.fill()
+}
+
+const buildVisualizerBGRGB = (canvasCtx, WIDTH, HEIGHT) => {
+  const bgGradient1 = canvasCtx.createLinearGradient(0, 0, WIDTH, 0)
+  bgGradient1.addColorStop(0, cycleColor(false))
+  bgGradient1.addColorStop(0.5, 'rgba(0,0,0,0)')
+  bgGradient1.addColorStop(1, cycleColor(false, 100))
+
+  canvasCtx.beginPath()
+  canvasCtx.rect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = bgGradient1
+  canvasCtx.fill()
+
+  const bgGradient2 = canvasCtx.createLinearGradient(0, 0, 0, HEIGHT)
+  bgGradient2.addColorStop(0, cycleColor(false, 200))
+  bgGradient2.addColorStop(0.5, 'rgba(0,0,0,0)')
+  bgGradient2.addColorStop(1, cycleColor(false, 200))
+
+  canvasCtx.beginPath()
+  canvasCtx.rect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = bgGradient2
+  canvasCtx.fill()
+
+  canvasCtx.beginPath()
+  canvasCtx.rect(0, 0, WIDTH, HEIGHT)
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.6)'
+  canvasCtx.fill()
+}
+
+const buildVisualizerStripes = (canvasCtx, WIDTH, HEIGHT, stripeSize = 3) => {
+  const pinstripeSize = stripeSize
+  canvasCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)'
+  canvasCtx.lineWidth = pinstripeSize
+
+  for (let i = 0; i < HEIGHT; i += (pinstripeSize * 2)) {
+    canvasCtx.beginPath()
+    canvasCtx.moveTo(0, i)
+    canvasCtx.lineTo(WIDTH, i)
+    canvasCtx.stroke()
+  }
+}
 
 const constraints = {
   audio: {
@@ -324,11 +540,11 @@ const setWaveVisualizer = () => {
 }
 
 const setConcentricCircles = () => {
-  window.requestAnimationFrame(concentricCirclesViz)
+  window.requestAnimationFrame(concentricCirclesVis)
 }
 
 const setBubbleVisualizer = () => {
-  // window.requestAnimationFrame(bubbleViz)
+  window.requestAnimationFrame(bubbleVis)
 }
 
 ipcRenderer.on('changeVisualizer', function (event, args) {
@@ -418,10 +634,10 @@ function updateGUI () {
 
 window.addEventListener('DOMContentLoaded', () => {
   updateGUI()
-  setBarVisualizer()
-  currentVisualizer = 'centeredBars'
-  // setConcentricCircles()
-  // currentVisualizer = 'concentricCircles'
+  // setBarVisualizer()
+  // currentVisualizer = 'centeredBars'
+  setBubbleVisualizer()
+  currentVisualizer = 'bubbles'
   setInterval(updateGUI, 250)
 
   document.getElementById('settingsPanel').onclick = (e) => {
