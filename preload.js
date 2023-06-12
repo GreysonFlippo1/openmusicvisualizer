@@ -283,33 +283,33 @@ const bubbeProperties = [
     size: 280
   },
   {
-    outer: 'rgb(171, 171, 75)',
-    inner: 'rgba(171, 171, 75, .5)',
-    rgb: '171, 171, 75',
+    outer: 'rgb(122, 122, 53)',
+    inner: 'rgba(122, 122, 53, .5)',
+    rgb: '122, 122, 53',
     location: [0, 0],
     destination: [0, 0],
     size: 280
   },
   {
-    outer: 'rgb(133, 37, 133)',
-    inner: 'rgba(133, 37, 133, .5)',
-    rgb: '133, 37, 133',
+    outer: 'rgb(105, 31, 62)',
+    inner: 'rgba(105, 31, 62, .5)',
+    rgb: '105, 31, 62',
     location: [0, 0],
     destination: [0, 0],
     size: 200
   },
   {
-    outer: 'rgb(93, 156, 156)',
-    inner: 'rgba(93, 156, 156, .5)',
-    rgb: '93, 156, 156',
+    outer: 'rgb(65, 112, 112)',
+    inner: 'rgba(65, 112, 112, .5)',
+    rgb: '65, 112, 112',
     location: [0, 0],
     destination: [0, 0],
     size: 100
   },
   {
-    outer: 'rgb(109, 61, 138)',
-    inner: 'rgba(109, 61, 138, .5)',
-    rgb: '109, 61, 138',
+    outer: 'rgb(72, 40, 92)',
+    inner: 'rgba(72, 40, 92, .5)',
+    rgb: '72, 40, 92',
     location: [0, 0],
     destination: [0, 0],
     size: 180
@@ -399,7 +399,7 @@ function bubbleVis () {
         bubbleDestination[0] = Math.round((Math.random() * (WIDTH + 200)) - 100)
         bubbleDestination[1] = Math.round((Math.random() * (HEIGHT + 200)) - 100)
       } else {
-        const speed = 1 - (bubbleSize / 410)
+        const speed = Math.min(1 - (bubbleSize / 410), 0.25)
         if (bubbleCoords[0] < bubbleDestination[0]) {
           bubbleCoords[0] += speed
         } else {
