@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,24 @@
   "homepage": "https://github.com/GreysonFlippo1/openmusicvisualizer#readme",
   "devDependencies": {
     "electron": "^21.3.1",
+    "electron-builder": "^23.6.0",
     "eslint": "^8.31.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.4",
     "eslint-plugin-n": "^15.6.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.0"
+  },
+  "build": {
+    "appId": "com.openmusicvisualizer.app",
+    "productName" : "Open Music Visualizer Beta",
+    "target": "NSIS",
+    "directories": {
+      "output": "build"
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false
+    }
   }
 }

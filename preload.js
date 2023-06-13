@@ -636,10 +636,10 @@ function updateGUI () {
 
 window.addEventListener('DOMContentLoaded', () => {
   updateGUI()
-  // setBarVisualizer()
-  // currentVisualizer = 'centeredBars'
-  setBubbleVisualizer()
-  currentVisualizer = 'bubbles'
+  setBarVisualizer()
+  currentVisualizer = 'centeredBars'
+  // setBubbleVisualizer()
+  // currentVisualizer = 'bubbles'
   setInterval(updateGUI, 250)
 
   document.getElementById('settingsPanel').onclick = (e) => {

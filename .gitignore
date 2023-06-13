@@ -108,3 +108,6 @@ dist
 
 # MacOS folder data
 .DS_Store
+
+# builds
+build
