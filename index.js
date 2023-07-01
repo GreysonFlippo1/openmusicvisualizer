@@ -103,6 +103,14 @@ const template = [
         }
       },
       {
+        label: 'Smoothing',
+        type: 'checkbox',
+        checked: true,
+        click: () => {
+          changeAudioSmoothing()
+        }
+      },
+      {
         label: 'Color Cycle',
         type: 'checkbox',
         checked: true,
@@ -168,6 +176,10 @@ const changeVisualizer = (type) => {
 
 const changeAudioSource = () => {
   contents.send('changeAudioSource', [true, isMac])
+}
+
+const changeAudioSmoothing = () => {
+  contents.send('changeAudioSmoothing', [true])
 }
 
 const initAudio = () => {

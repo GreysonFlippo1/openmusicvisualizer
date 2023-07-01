@@ -9,7 +9,7 @@ const userPreferences = {
   tall_bars: true,
   rounded_bars: true,
   boosted_audio: false,
-  smoothingTimeConstant: 0,
+  smoothingTimeConstant: 0.7,
   fftUni: 8192,
   barWidth: 12,
   barSpacing: 2
@@ -38,6 +38,10 @@ function setAudioSource (stream) {
     bufferLength,
     dataArray
   }
+}
+
+const setSmoothing = (time) => {
+  mediaElement.analyser.smoothingTimeConstant = time
 }
 
 let red = 255
@@ -534,19 +538,27 @@ ipcRenderer.on('initAudio', function (event, args) {
 })
 
 const setBarVisualizer = () => {
-  window.requestAnimationFrame(barVis)
+  if (currentVisualizer !== 'bars' && currentVisualizer !== 'centeredBars') {
+    window.requestAnimationFrame(barVis)
+  }
 }
 
 const setWaveVisualizer = () => {
-  window.requestAnimationFrame(waveVis)
+  if (currentVisualizer !== 'wave' && currentVisualizer !== 'circle') {
+    window.requestAnimationFrame(waveVis)
+  }
 }
 
 const setConcentricCircles = () => {
-  window.requestAnimationFrame(concentricCirclesVis)
+  if (currentVisualizer !== 'concentricCircles') {
+    window.requestAnimationFrame(concentricCirclesVis)
+  }
 }
 
 const setBubbleVisualizer = () => {
-  window.requestAnimationFrame(bubbleVis)
+  if (currentVisualizer !== 'bubbles') {
+    window.requestAnimationFrame(bubbleVis)
+  }
 }
 
 ipcRenderer.on('changeVisualizer', function (event, args) {
@@ -578,6 +590,11 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
 
 ipcRenderer.on('changeAudioSource', function (event, args) {
   toggleSettingsMenu()
+})
+
+ipcRenderer.on('changeAudioSmoothing', function (event, args) {
+  userPreferences.smoothingTimeConstant = userPreferences.smoothingTimeConstant === 0 ? 0.7 : 0
+  setSmoothing(userPreferences.smoothingTimeConstant)
 })
 
 ipcRenderer.on('changeSettings', function (event, args) {
