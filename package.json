@@ -37,7 +37,7 @@
     "target": "NSIS",
     "directories": {
       "output": "build",
-      "icon": "resources/icon.png"
+      "buildResources": "resources"
     },
     "nsis": {
       "allowToChangeInstallationDirectory": true,
