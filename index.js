@@ -3,10 +3,19 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, Menu, ipcMain, desktopCapturer } = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 const isMac = process.platform === 'darwin'
 
-const template = [
+const settings = {
+  tall_bars: true,
+  boosted_audio: false,
+  rounded_bars: true,
+  color_cycle: true,
+  smoothing: true,
+}
+
+const buildTemplate = [
   ...(isMac ? [{
     label: app.name,
     submenu: [
@@ -95,8 +104,9 @@ const template = [
       },
       {
         label: 'Boost Input Signal',
+        id: 'boosted_audio',
         type: 'checkbox',
-        checked: false,
+        checked: settings.boosted_audio,
         click: () => {
           settings.boosted_audio = !settings.boosted_audio
           changeSettings()
@@ -104,16 +114,19 @@ const template = [
       },
       {
         label: 'Smoothing',
+        id: 'smoothing',
         type: 'checkbox',
-        checked: true,
+        checked: settings.smoothing,
         click: () => {
-          changeAudioSmoothing()
+          settings.smoothing = !settings.smoothing
+          changeSettings()
         }
       },
       {
         label: 'Color Cycle',
+        id: 'color_cycle',
         type: 'checkbox',
-        checked: true,
+        checked: settings.color_cycle,
         click: () => {
           settings.color_cycle = !settings.color_cycle
           changeSettings()
@@ -124,8 +137,9 @@ const template = [
       },
       {
         label: 'Extra Tall Bars',
+        id: 'tall_bars',
         type: 'checkbox',
-        checked: true,
+        checked: settings.tall_bars,
         click: () => {
           settings.tall_bars = !settings.tall_bars
           changeSettings()
@@ -133,8 +147,9 @@ const template = [
       },
       {
         label: 'Rounded Bars',
+        id: 'rounded_bars',
         type: 'checkbox',
-        checked: true,
+        checked: settings.rounded_bars,
         click: () => {
           settings.rounded_bars = !settings.rounded_bars
           changeSettings()
@@ -170,6 +185,16 @@ const template = [
 
 let contents
 
+ipcMain.handle('save-user-data', async (event, fileName, json) => {
+  const path = app.getPath('userData')
+  try {
+    fs.writeFileSync(`${path}/${fileName}`, json, 'utf-8')
+  } catch (e) {
+    return e
+  }
+  return 'success'
+})
+
 const changeVisualizer = (type) => {
   contents.send('changeVisualizer', [type])
 }
@@ -178,23 +203,21 @@ const changeAudioSource = () => {
   contents.send('changeAudioSource', [true, isMac])
 }
 
-const changeAudioSmoothing = () => {
-  contents.send('changeAudioSmoothing', [true])
-}
-
 const initAudio = () => {
   contents.send('initAudio', [true, isMac])
 }
 
-const settings = {
-  tall_bars: true,
-  boosted_audio: false,
-  rounded_bars: true,
-  color_cycle: true
-}
-
 const changeSettings = () => {
   contents.send('changeSettings', Object.keys(settings).map(setting => settings[setting]))
+
+  const menu = Menu.buildFromTemplate(buildTemplate)
+
+  Object.keys(settings).forEach(key => {
+    // console.log('updating key: ', key, settings[key])
+    menu.getMenuItemById(key).checked = !!settings[key]
+  })
+
+  Menu.setApplicationMenu(menu)
 }
 
 const createWindow = () => {
@@ -226,12 +249,27 @@ const createWindow = () => {
   contents = mainWindow.webContents
 
   initAudio()
+  const menu = Menu.buildFromTemplate(buildTemplate)
 
   contents.on('did-finish-load', () => {
     contents.setAudioMuted(true)
+    const path = app.getPath('userData')
+    // console.log(path)
+    fs.readFile(`${path}/user-settings.json`, 'utf8', function (err, data) {
+      if (err) {
+        fs.writeFileSync(`${path}/user-settings.json`, '{}', 'utf-8')
+        contents.send('userSettings', {})
+      } else {
+        const json = JSON.parse(data)
+        Object.keys(settings).forEach(key => {
+          settings[key] = json[key] ?? settings[key]
+          menu.getMenuItemById(key).checked = json[key] ?? settings[key]
+        })
+        contents.send('userSettings', json)
+      }
+    })
   })
 
-  const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
 
   // and load the index.html of the app.

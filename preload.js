@@ -2,7 +2,7 @@
 // It has the same sandbox as a Chrome extension.
 const { ipcRenderer } = require('electron')
 
-const userPreferences = {
+let userPreferences = {
   color_cycle: true,
   primary_color: 'white',
   secondary_color: 'white',
@@ -12,7 +12,9 @@ const userPreferences = {
   smoothingTimeConstant: 0.7,
   fftUni: 8192,
   barWidth: 12,
-  barSpacing: 2
+  barSpacing: 2,
+  settingsLoaded: false,
+  smoothing: true,
 }
 
 let mediaElement = {}
@@ -20,7 +22,7 @@ let mediaElement = {}
 function setAudioSource (stream) {
   const audioCtx = new AudioContext()
   const analyser = audioCtx.createAnalyser()
-  analyser.smoothingTimeConstant = userPreferences.smoothingTimeConstant
+  analyser.smoothingTimeConstant = userPreferences.smoothing ? 0.7 : 0
   const source = audioCtx.createMediaStreamSource(stream)
   source.connect(analyser)
   analyser.connect(audioCtx.destination)
@@ -592,17 +594,32 @@ ipcRenderer.on('changeAudioSource', function (event, args) {
   toggleSettingsMenu()
 })
 
-ipcRenderer.on('changeAudioSmoothing', function (event, args) {
-  userPreferences.smoothingTimeConstant = userPreferences.smoothingTimeConstant === 0 ? 0.7 : 0
-  setSmoothing(userPreferences.smoothingTimeConstant)
-})
-
 ipcRenderer.on('changeSettings', function (event, args) {
   userPreferences.tall_bars = args[0]
   userPreferences.boosted_audio = args[1]
   userPreferences.rounded_bars = args[2]
   userPreferences.color_cycle = args[3]
+  userPreferences.smoothing = args[4]
+
+  setSmoothing(args[4] ? 0.7 : 0)
+  saveUserData()
 })
+
+ipcRenderer.on('userSettings', function (event, data) {
+  Object.keys(data).forEach(key => {
+    userPreferences[key] = data[key]
+  })
+  userPreferences.settingsLoaded = true
+})
+
+const saveUserData = () => {
+  const jsonData = JSON.stringify(userPreferences)
+  ipcRenderer.invoke('save-user-data', 'user-settings.json', jsonData).then(
+      result => {
+        // console.log('preferences saved...')
+      }
+  )
+}
 
 const toggleSettingsMenu = (isMac) => {
   if (document.getElementById('settingsPanel').style.display !== 'block') {
