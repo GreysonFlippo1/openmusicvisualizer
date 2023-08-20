@@ -1,6 +1,6 @@
 {
   "name": "openmusicvisualizer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "open music visualizer",
   "main": "index.js",
   "scripts": {
@@ -36,11 +36,15 @@
     "productName" : "Open Music Visualizer Beta",
     "target": "NSIS",
     "directories": {
-      "output": "build"
+      "output": "build",
+      "icon": "resources/icon.png"
     },
     "nsis": {
       "allowToChangeInstallationDirectory": true,
       "oneClick": false
+    },
+    "mac": {
+      "target": "dmg"
     }
   }
 }
