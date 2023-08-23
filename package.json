@@ -6,7 +6,9 @@
   "scripts": {
     "test": "test",
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "build": "electron-builder -mw",
+    "buildx86": "electron-builder --win --x64"
   },
   "repository": {
     "type": "git",
@@ -34,14 +36,10 @@
   "build": {
     "appId": "com.openmusicvisualizer.app",
     "productName" : "Open Music Visualizer Beta",
-    "target": "NSIS",
+    "target": "portable",
     "directories": {
       "output": "build",
       "buildResources": "resources"
-    },
-    "nsis": {
-      "allowToChangeInstallationDirectory": true,
-      "oneClick": false
     },
     "mac": {
       "target": "dmg"
