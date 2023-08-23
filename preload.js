@@ -15,6 +15,7 @@ let userPreferences = {
   barSpacing: 2,
   settingsLoaded: false,
   smoothing: true,
+  currentVisualizer: 'none',
 }
 
 let mediaElement = {}
@@ -40,6 +41,8 @@ function setAudioSource (stream) {
     bufferLength,
     dataArray
   }
+
+  changeVisualizer(userPreferences.currentVisualizer)
 }
 
 const setSmoothing = (time) => {
@@ -563,9 +566,8 @@ const setBubbleVisualizer = () => {
   }
 }
 
-ipcRenderer.on('changeVisualizer', function (event, args) {
-  const visualizerType = args[0]
-  switch (visualizerType) {
+const changeVisualizer = (type) => {
+  switch (type) {
     case 'bars':
       setBarVisualizer()
       break
@@ -587,39 +589,33 @@ ipcRenderer.on('changeVisualizer', function (event, args) {
     default:
       break
   }
-  currentVisualizer = visualizerType
-})
+  currentVisualizer = type
+}
 
 ipcRenderer.on('changeAudioSource', function (event, args) {
   toggleSettingsMenu()
 })
 
-ipcRenderer.on('changeSettings', function (event, args) {
-  userPreferences.tall_bars = args[0]
-  userPreferences.boosted_audio = args[1]
-  userPreferences.rounded_bars = args[2]
-  userPreferences.color_cycle = args[3]
-  userPreferences.smoothing = args[4]
-
-  setSmoothing(args[4] ? 0.7 : 0)
-  saveUserData()
-})
-
-ipcRenderer.on('userSettings', function (event, data) {
+ipcRenderer.on('changeSettings', function (event, data) {
+  console.log(data)
   Object.keys(data).forEach(key => {
     userPreferences[key] = data[key]
   })
-  userPreferences.settingsLoaded = true
+
+  if (mediaElement.attached) {
+    setSmoothing(userPreferences.smoothing ? 0.7 : 0)
+    changeVisualizer(userPreferences.currentVisualizer)
+  }
 })
 
-const saveUserData = () => {
-  const jsonData = JSON.stringify(userPreferences)
-  ipcRenderer.invoke('save-user-data', 'user-settings.json', jsonData).then(
-      result => {
-        // console.log('preferences saved...')
-      }
-  )
-}
+// const saveUserData = () => {
+//   const jsonData = JSON.stringify(userPreferences)
+//   ipcRenderer.invoke('save-user-data', 'user-settings.json', jsonData).then(
+//       result => {
+//         // console.log('preferences saved...')
+//       }
+//   )
+// }
 
 const toggleSettingsMenu = (isMac) => {
   if (document.getElementById('settingsPanel').style.display !== 'block') {
@@ -670,10 +666,6 @@ function updateGUI () {
 
 window.addEventListener('DOMContentLoaded', () => {
   updateGUI()
-  setBarVisualizer()
-  currentVisualizer = 'centeredBars'
-  // setBubbleVisualizer()
-  // currentVisualizer = 'bubbles'
   setInterval(updateGUI, 250)
 
   document.getElementById('settingsPanel').onclick = (e) => {
@@ -721,7 +713,7 @@ function keyPressed (e) {
     // setActiveVisualizer(2)
   }
 
-  if (keysPressed.includes(escapeKey) && document.getElementById('settingsPanel').style.display === 'block') {
+  if (keysPressed.includes(escapeKey)) {
     toggleSettingsMenu()
   }
 }

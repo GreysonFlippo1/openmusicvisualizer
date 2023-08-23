@@ -13,6 +13,7 @@ const settings = {
   rounded_bars: true,
   color_cycle: true,
   smoothing: true,
+  currentVisualizer: 'none'
 }
 
 const buildTemplate = [
@@ -57,36 +58,54 @@ const buildTemplate = [
         submenu: [
           {
             label: 'Bouncy Bars',
+            id: 'bars',
+            type: 'checkbox',
+            checked: settings.currentVisualizer === 'bars',
             click: () => {
               changeVisualizer('bars')
             }
           },
           {
             label: 'Centered Bars',
+            id: 'centeredBars',
+            type: 'checkbox',
+            checked: settings.currentVisualizer === 'centeredBars',
             click: () => {
               changeVisualizer('centeredBars')
             }
           },
           {
             label: 'Wiggly Waveform',
+            id: 'wave',
+            type: 'checkbox',
+            checked: settings.currentVisualizer === 'wave',
             click: () => {
               changeVisualizer('wave')
             }
           },
           {
             label: 'Circular Waveform',
+            id: 'circle',
+            type: 'checkbox',
+            checked: settings.currentVisualizer === 'circle',
             click: () => {
               changeVisualizer('circle')
             }
           },
           {
             label: 'Concentric Circles',
+            id: 'concentricCircles',
+            type: 'checkbox',
+            checked: settings.currentVisualizer === 'concentricCircles',
             click: () => {
               changeVisualizer('concentricCircles')
             }
           },
           {
             label: 'Bubbles',
+            id: 'bubbles',
+            type: 'checkbox',
+            checked: settings.currentVisualizer === 'bubbles',
             click: () => {
               changeVisualizer('bubbles')
             }
@@ -185,18 +204,20 @@ const buildTemplate = [
 
 let contents
 
-ipcMain.handle('save-user-data', async (event, fileName, json) => {
-  const path = app.getPath('userData')
-  try {
-    fs.writeFileSync(`${path}/${fileName}`, json, 'utf-8')
-  } catch (e) {
-    return e
-  }
-  return 'success'
-})
+// ipcMain.handle('save-user-data', async (event, fileName, json) => {
+//   const path = app.getPath('userData')
+//   try {
+//     fs.writeFileSync(`${path}/${fileName}`, json, 'utf-8')
+//   } catch (e) {
+//     return e
+//   }
+//   return 'success'
+// })
 
 const changeVisualizer = (type) => {
-  contents.send('changeVisualizer', [type])
+  settings.currentVisualizer = type
+  // contents.send('changeVisualizer', [type])
+  changeSettings()
 }
 
 const changeAudioSource = () => {
@@ -208,13 +229,35 @@ const initAudio = () => {
 }
 
 const changeSettings = () => {
-  contents.send('changeSettings', Object.keys(settings).map(setting => settings[setting]))
+  contents.send('changeSettings', settings)
+  updateMenu(settings)
 
+
+  const path = app.getPath('userData')
+  const fileName = 'user-settings.json'
+  const json = JSON.stringify(settings)
+
+  try {
+    fs.writeFileSync(`${path}/${fileName}`, json, 'utf-8')
+  } catch (e) {
+    return e
+  }
+  return 'success'
+
+}
+
+const updateMenu = (preferences) => {
   const menu = Menu.buildFromTemplate(buildTemplate)
 
-  Object.keys(settings).forEach(key => {
-    // console.log('updating key: ', key, settings[key])
-    menu.getMenuItemById(key).checked = !!settings[key]
+  Object.keys(preferences).forEach(key => {
+    // console.log('updating key: ', key, preferences[key])
+    if (key == 'currentVisualizer'){
+      const value = preferences[key]
+      menu.getMenuItemById(value).checked = preferences[key] == value
+    } else {
+      // bools
+      menu.getMenuItemById(key).checked = !!preferences[key]
+    } 
   })
 
   Menu.setApplicationMenu(menu)
@@ -255,17 +298,18 @@ const createWindow = () => {
     contents.setAudioMuted(true)
     const path = app.getPath('userData')
     // console.log(path)
-    fs.readFile(`${path}/user-settings.json`, 'utf8', function (err, data) {
+    fs.readFile(`${path}/user-settings.json`, 'utf8', function (err, json) {
       if (err) {
         fs.writeFileSync(`${path}/user-settings.json`, '{}', 'utf-8')
-        contents.send('userSettings', {})
+        contents.send('changeSettings', {})
       } else {
-        const json = JSON.parse(data)
+        const data = JSON.parse(json)
         Object.keys(settings).forEach(key => {
-          settings[key] = json[key] ?? settings[key]
-          menu.getMenuItemById(key).checked = json[key] ?? settings[key]
+          settings[key] = data[key] ?? settings[key]
+          // menu.getMenuItemById(key).checked = json[key] ?? settings[key]
         })
-        contents.send('userSettings', json)
+        updateMenu(settings)
+        contents.send('changeSettings', data)
       }
     })
   })
