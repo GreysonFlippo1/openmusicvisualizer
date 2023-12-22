@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/GreysonFlippo1/openmusicvisualizer#readme",
   "devDependencies": {
-    "electron": "^21.3.1",
-    "electron-builder": "^23.6.0",
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1",
     "eslint": "^8.31.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.4",
@@ -35,7 +35,7 @@
   },
   "build": {
     "appId": "com.openmusicvisualizer.app",
-    "productName" : "Open Music Visualizer Beta",
+    "productName": "Open Music Visualizer Beta",
     "target": "portable",
     "directories": {
       "output": "build",
