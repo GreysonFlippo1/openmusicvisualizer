@@ -24,14 +24,14 @@
   },
   "homepage": "https://github.com/GreysonFlippo1/openmusicvisualizer#readme",
   "devDependencies": {
-    "electron": "^28.1.0",
-    "electron-builder": "^24.9.1",
-    "eslint": "^8.31.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.27.4",
-    "eslint-plugin-n": "^15.6.1",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react": "^7.32.0"
+    "electron": "^39.2.7",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.57.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-react": "^7.37.5"
   },
   "build": {
     "appId": "com.openmusicvisualizer.app",

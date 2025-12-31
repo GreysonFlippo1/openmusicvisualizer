@@ -493,53 +493,26 @@ const buildVisualizerStripes = (canvasCtx, WIDTH, HEIGHT, stripeSize = 3) => {
   }
 }
 
-const constraints = {
-  audio: {
-    // deviceId: '61be88311892ec5aabc55b75980476318c0f810a084962ae146da188f196020f',
-    deviceId: 'default',
-    kind: 'audioinput'
-  }
-}
-
 ipcRenderer.on('initAudio', function (event, args) {
-  const isMac = args[1]
-
-  if (isMac) {
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-      constraints.audio.deviceId = devices[0].deviceId
-      constraints.audio.kind = devices[0].kind
-    }).catch((err) => {
-      console.error(`${err.name}: ${err.message}`)
-    })
-
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then((mediaStream) => {
-        setAudioSource(mediaStream)
-      })
-      .catch((err) => {
-        console.error(`${err.name}: ${err.message}`)
-      })
-  } else {
-    const winConstraints = {
-      audio: {
-        mandatory: {
-          chromeMediaSource: 'desktop'
-        }
-      },
-      video: {
-        mandatory: {
-          chromeMediaSource: 'desktop'
-        }
+  const winConstraints = {
+    audio: {
+      mandatory: {
+        chromeMediaSource: 'desktop'
+      }
+    },
+    video: {
+      mandatory: {
+        chromeMediaSource: 'desktop'
       }
     }
-    navigator.mediaDevices.getUserMedia(winConstraints)
-      .then((mediaStream) => {
-        setAudioSource(mediaStream)
-      })
-      .catch((err) => {
-        console.error(`${err.name}: ${err.message}`)
-      })
   }
+  navigator.mediaDevices.getUserMedia(winConstraints)
+    .then((mediaStream) => {
+      setAudioSource(mediaStream)
+    })
+    .catch((err) => {
+      console.error(`${err.name}: ${err.message}`)
+    })
 })
 
 const setBarVisualizer = () => {
@@ -592,10 +565,6 @@ const changeVisualizer = (type) => {
   currentVisualizer = type
 }
 
-ipcRenderer.on('changeAudioSource', function (event, args) {
-  toggleSettingsMenu()
-})
-
 ipcRenderer.on('changeSettings', function (event, data) {
   console.log(data)
   Object.keys(data).forEach(key => {
@@ -616,48 +585,6 @@ ipcRenderer.on('changeSettings', function (event, data) {
 //       }
 //   )
 // }
-
-const toggleSettingsMenu = (isMac) => {
-  if (document.getElementById('settingsPanel').style.display !== 'block') {
-    document.getElementById('settingsPanel').style.display = 'block'
-    navigator.mediaDevices.enumerateDevices().then((e) => {
-      if (e.length) {
-        const list = document.getElementById('settingsList')
-        while (list.firstChild) {
-          list.removeChild(list.firstChild)
-        }
-        e.forEach((device, i) => {
-          list.appendChild(document.createElement('li')).id = device.kind + device.deviceId
-          document.getElementById(device.kind + device.deviceId).innerText = `${device.kind === 'audioinput' ? '🎙️ — ' : '🔈 — '} ${device.label}`
-          document.getElementById(device.kind + device.deviceId).onclick = () => { changeSource(device) }
-          if (device.kind + device.deviceId === constraints.audio.kind + constraints.audio.deviceId) {
-            document.getElementById(device.kind + device.deviceId).style.color = '#0099ff'
-          }
-        })
-      }
-      // else show there are no inputs
-    }).catch((err) => {
-      console.error(`${err.name}: ${err.message}`)
-    })
-  } else {
-    document.getElementById('settingsPanel').style.display = 'none'
-  }
-}
-
-const changeSource = (device) => {
-  // may need to consider if source no longer exists
-  document.getElementById(constraints.audio.kind + constraints.audio.deviceId).style.color = '#fff'
-  constraints.audio.deviceId = device.deviceId
-  constraints.audio.kind = device.kind
-  document.getElementById(constraints.audio.kind + constraints.audio.deviceId).style.color = '#0099ff'
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then((mediaStream) => {
-      setAudioSource(mediaStream)
-    })
-    .catch((err) => {
-      console.error(`${err.name}: ${err.message}`)
-    })
-}
 
 function updateGUI () {
   document.getElementById('canvas1').setAttribute('height', window.innerHeight)
@@ -714,7 +641,6 @@ function keyPressed (e) {
   }
 
   if (keysPressed.includes(escapeKey)) {
-    toggleSettingsMenu()
   }
 }
 

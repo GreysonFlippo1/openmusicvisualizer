@@ -20,18 +20,6 @@ const buildTemplate = [
   ...(isMac ? [{
     label: app.name,
     submenu: [
-      // {
-      //    label: 'Change Audio Source',
-      //    click: () => {
-      //       changeAudioSource()
-      //    },
-      // },
-      // {
-      //    label: 'Preferences'
-      // },
-      // {
-      //    type: 'separator'
-      // },
       {
         role: 'quit',
         label: 'Quit Open Music Visualizer'
@@ -112,12 +100,6 @@ const buildTemplate = [
           }
         ]
       },
-      ...(isMac ? [{
-        label: 'Change Audio Source',
-        click: () => {
-          changeAudioSource()
-        }
-      }] : []),
       {
         type: 'separator'
       },
@@ -220,10 +202,6 @@ const changeVisualizer = (type) => {
   changeSettings()
 }
 
-const changeAudioSource = () => {
-  contents.send('changeAudioSource', [true, isMac])
-}
-
 const initAudio = () => {
   contents.send('initAudio', [true, isMac])
 }
@@ -272,22 +250,20 @@ const createWindow = () => {
     // transparent: true,
     // titleBarStyle: 'hiddenInset',
     // frame: false,
-    autoHideMenuBar: true,
+    // autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
   })
 
-  if (!isMac) {
-    desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
-      for (const source of sources) {
-        if (source.name === 'Electron') {
-          mainWindow.webContents.send('SET_SOURCE', source.id)
-          return
-        }
+  desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async sources => {
+    for (const source of sources) {
+      if (source.name === 'Electron') {
+        mainWindow.webContents.send('SET_SOURCE', source.id)
+        return
       }
-    })
-  }
+    }
+  })
 
   contents = mainWindow.webContents
 
