@@ -284,7 +284,11 @@ const createWindow = () => {
           settings[key] = data[key] ?? settings[key]
           // menu.getMenuItemById(key).checked = json[key] ?? settings[key]
         })
-        updateMenu(settings)
+        if (isMac) {
+          updateMenu(settings)
+        } else {
+          setTimeout(() => {updateMenu(settings)}, 100)
+        }
         contents.send('changeSettings', data)
       }
     })

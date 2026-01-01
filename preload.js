@@ -202,14 +202,14 @@ function waveVis () {
   gradient.addColorStop(1, cycleColor(false, 100))
 
   canvasCtx.strokeStyle = userPreferences.color_cycle ? gradient : userPreferences.primary_color
-  canvasCtx.lineWidth = 3000 / HEIGHT
+  canvasCtx.lineWidth = 2
   canvasCtx.shadowColor = '#000'
   canvasCtx.shadowBlur = 1
   canvasCtx.shadowOffsetX = 0
   canvasCtx.shadowOffsetY = 0
   if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3 }
   canvasCtx.beginPath()
-  const sliceWidth = WIDTH / mediaElement.bufferLength * 4
+  const sliceWidth = (WIDTH / mediaElement.bufferLength) * 4
   const radius1 = HEIGHT / 4
   let x = 0
   let lastx = WIDTH / 2 + radius1
@@ -221,11 +221,11 @@ function waveVis () {
     const y = v * HEIGHT / 2
     if (currentVisualizer === 'circle') {
       canvasCtx.lineTo((WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength * 2), (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength * 2) * -1)
+      lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength)
+      lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength) * -1
     } else {
       canvasCtx.lineTo(x, y)
     }
-    lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength)
-    lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength) * -1
     x += sliceWidth
   }
   if (currentVisualizer === 'circle') { canvasCtx.lineTo(lastx, lasty) }
@@ -278,49 +278,37 @@ function concentricCirclesVis () {
 
 const bubbeProperties = [
   {
-    outer: 'rgb(54, 54, 165)',
-    inner: 'rgba(54, 54, 165, .7)',
-    rgb: '54, 54, 165',
+    color: '54, 54, 165',
     location: [0, 0],
     destination: [0, 0],
     size: 400
   },
   {
-    outer: 'rgb(181, 30, 30)',
-    inner: 'rgba(181, 30, 30, .5)',
-    rgb: '181, 30, 30',
+    color: '181, 30, 30',
     location: [0, 0],
     destination: [0, 0],
     size: 280
   },
   {
-    outer: 'rgb(122, 122, 53)',
-    inner: 'rgba(122, 122, 53, .5)',
-    rgb: '122, 122, 53',
+    color: '122, 122, 53',
     location: [0, 0],
     destination: [0, 0],
     size: 280
   },
   {
-    outer: 'rgb(105, 31, 62)',
-    inner: 'rgba(105, 31, 62, .5)',
-    rgb: '105, 31, 62',
+    color: '105, 31, 62',
     location: [0, 0],
     destination: [0, 0],
     size: 200
   },
   {
-    outer: 'rgb(65, 112, 112)',
-    inner: 'rgba(65, 112, 112, .5)',
-    rgb: '65, 112, 112',
+    color: '65, 112, 112',
     location: [0, 0],
     destination: [0, 0],
     size: 100
   },
   {
-    outer: 'rgb(72, 40, 92)',
-    inner: 'rgba(72, 40, 92, .5)',
-    rgb: '72, 40, 92',
+    color: '72, 40, 92',
     location: [0, 0],
     destination: [0, 0],
     size: 180
@@ -374,9 +362,9 @@ function bubbleVis () {
         const bubbleSize = bubbeProperties[i].explode
         const fillGradient = canvasCtx.createRadialGradient(bubbleCoords[0], bubbleCoords[1], 5, bubbleCoords[0], bubbleCoords[1], bubbleSize)
         fillGradient.addColorStop(0, 'rgba(0,0,0,0)')
-        fillGradient.addColorStop(1, `rgba(${bubbeProperties[i].rgb},${opacity / 2})`)
+        fillGradient.addColorStop(1, `rgba(${bubbeProperties[i].color},${opacity / 2})`)
 
-        canvasCtx.strokeStyle = `rgba(${bubbeProperties[i].rgb},${opacity})`
+        canvasCtx.strokeStyle = `rgba(${bubbeProperties[i].color},${opacity})`
         canvasCtx.lineWidth = 5
         canvasCtx.fillStyle = fillGradient
         canvasCtx.beginPath()
@@ -391,9 +379,9 @@ function bubbleVis () {
       const bubbleSize = bubbeProperties[i].size + pop
       const fillGradient = canvasCtx.createRadialGradient(bubbleCoords[0], bubbleCoords[1], 5, bubbleCoords[0], bubbleCoords[1], bubbleSize)
       fillGradient.addColorStop(0, 'rgba(0,0,0,0)')
-      fillGradient.addColorStop(1, bubbeProperties[i].inner)
+      fillGradient.addColorStop(1, `rgb(${bubbeProperties[i].color}, 0.5)`)
 
-      canvasCtx.strokeStyle = bubbeProperties[i].outer
+      canvasCtx.strokeStyle = `rgb(${bubbeProperties[i].color})`
       canvasCtx.lineWidth = 5
       canvasCtx.fillStyle = fillGradient
       canvasCtx.beginPath()
@@ -410,7 +398,7 @@ function bubbleVis () {
         bubbleDestination[0] = Math.round((Math.random() * (WIDTH + 200)) - 100)
         bubbleDestination[1] = Math.round((Math.random() * (HEIGHT + 200)) - 100)
       } else {
-        const speed = Math.min(1 - (bubbleSize / 410), 0.25)
+        const speed = Math.min(1 - (bubbleSize / 810), 0.1)
         if (bubbleCoords[0] < bubbleDestination[0]) {
           bubbleCoords[0] += speed
         } else {
