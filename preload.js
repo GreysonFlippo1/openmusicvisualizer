@@ -7,7 +7,6 @@ let userPreferences = {
   primary_color: 'white',
   secondary_color: 'white',
   tall_bars: true,
-  // rounded_bars: true,
   boosted_audio: false,
   smoothingTimeConstant: 0.7,
   fftUni: 8192,
@@ -213,8 +212,8 @@ function waveVis () {
   canvasCtx.shadowOffsetY = 0
   if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3 }
   canvasCtx.beginPath()
-  const bufferLength = currentVisualizer === 'circle' ? mediaElement.bufferLength : 1024
-  const sliceWidth = WIDTH / bufferLength
+  const bufferLength = currentVisualizer === 'circle' ? mediaElement.bufferLength : 512
+  const sliceWidth = WIDTH / (bufferLength - 1)
   const radius1 = HEIGHT / 4
   let x = 0
   let lastx = WIDTH / 2 + radius1
@@ -222,8 +221,10 @@ function waveVis () {
   const i_start = currentVisualizer === 'circle' ? bufferLength / 2 : 0
   const i_end = bufferLength
 
+  const dataPoints = []; // for bezier curve
+
   for (let i = i_start; i < i_end; i++) {
-    const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1)) + 1
+    const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1.5)) + 1
     const radius2 = radius1 + (v * v * 150) * (HEIGHT / 1500)
     const y = v * HEIGHT / 2
     if (currentVisualizer === 'circle') {
@@ -231,7 +232,24 @@ function waveVis () {
       lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / bufferLength)
       lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / bufferLength) * -1
     } else {
-      canvasCtx.lineTo(x, y)
+      if (dataPoints.length) {
+        dataPoints.push({x, y})
+        const p0 = dataPoints[i - 1]
+        const p1 = dataPoints[i]
+        const factor = 2
+        const cp1 = {
+          x: p0.x + (p1.x - p0.x) / factor,
+          y: p0.y + (p1.y - p0.y) / factor
+        }
+        const cp2 = {
+          x: p1.x - (p1.x - p0.x) / factor,
+          y: p1.y - (p1.y - p0.y) / factor
+        }
+        canvasCtx.moveTo(p0.x, p0.y)
+        canvasCtx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p1.x, p1.y)
+      } else {
+        dataPoints.push({x, y})
+      }
     }
     x += sliceWidth
   }

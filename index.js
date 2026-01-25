@@ -10,7 +10,6 @@ const isMac = process.platform === 'darwin'
 const settings = {
   tall_bars: true,
   boosted_audio: false,
-  // rounded_bars: true,
   color_cycle: true,
   smoothing: true,
   currentVisualizer: 'none'
@@ -145,17 +144,7 @@ const buildTemplate = [
           settings.tall_bars = !settings.tall_bars
           changeSettings()
         }
-      },
-      // {
-      //   label: 'Rounded Bars',
-      //   id: 'rounded_bars',
-      //   type: 'checkbox',
-      //   checked: settings.rounded_bars,
-      //   click: () => {
-      //     settings.rounded_bars = !settings.rounded_bars
-      //     changeSettings()
-      //   }
-      // }
+      }
     ]
   },
 
