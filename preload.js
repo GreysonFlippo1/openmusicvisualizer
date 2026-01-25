@@ -7,10 +7,11 @@ let userPreferences = {
   primary_color: 'white',
   secondary_color: 'white',
   tall_bars: true,
-  rounded_bars: true,
+  // rounded_bars: true,
   boosted_audio: false,
   smoothingTimeConstant: 0.7,
   fftUni: 8192,
+  sampleRate: 44100,
   barWidth: 12,
   barSpacing: 2,
   settingsLoaded: false,
@@ -21,7 +22,10 @@ let userPreferences = {
 let mediaElement = {}
 
 function setAudioSource (stream) {
-  const audioCtx = new AudioContext()
+  const audioCtx = new AudioContext({
+    latencyHint: "interactive",
+    sampleRate: userPreferences.sampleRate,
+  })
   const analyser = audioCtx.createAnalyser()
   analyser.smoothingTimeConstant = userPreferences.smoothing ? 0.7 : 0
   const source = audioCtx.createMediaStreamSource(stream)
@@ -151,7 +155,7 @@ function barVis () {
 
   if (mediaElement.analyser) {
     mediaElement.analyser.getByteFrequencyData(mediaElement.frequencyData)
-    const borderRadius = userPreferences.rounded_bars ? '6' : '0'
+    const borderRadius = currentVisualizer === 'centeredBars' ? '6' : '0'
     const barAmnt = (WIDTH / (userPreferences.barWidth + userPreferences.barSpacing)) + 1
 
     const gradient = canvasCtx.createLinearGradient(0, 0, WIDTH, 0)
@@ -162,7 +166,7 @@ function barVis () {
       const formula = Math.ceil(Math.pow(i, 1.25))
       const frequencyData = mediaElement.frequencyData[formula]
       let pop = ((frequencyData * frequencyData * frequencyData) / (255 * 255 * 255)) * (HEIGHT * 0.50) * (userPreferences.boosted_audio ? 2 : 1) * (userPreferences.tall_bars ? 2 : 1)
-      if (userPreferences.rounded_bars && pop < 12) {
+      if (currentVisualizer === 'centeredBars' && pop < 12) {
         pop = 12
       }
       canvasCtx.beginPath()
@@ -209,20 +213,23 @@ function waveVis () {
   canvasCtx.shadowOffsetY = 0
   if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3 }
   canvasCtx.beginPath()
-  const sliceWidth = (WIDTH / mediaElement.bufferLength) * 4
+  const bufferLength = currentVisualizer === 'circle' ? mediaElement.bufferLength : 1024
+  const sliceWidth = WIDTH / bufferLength
   const radius1 = HEIGHT / 4
   let x = 0
   let lastx = WIDTH / 2 + radius1
   let lasty = HEIGHT / 2
+  const i_start = currentVisualizer === 'circle' ? bufferLength / 2 : 0
+  const i_end = bufferLength
 
-  for (let i = mediaElement.bufferLength / 2; i < mediaElement.bufferLength; i++) {
+  for (let i = i_start; i < i_end; i++) {
     const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1)) + 1
     const radius2 = radius1 + (v * v * 150) * (HEIGHT / 1500)
     const y = v * HEIGHT / 2
     if (currentVisualizer === 'circle') {
-      canvasCtx.lineTo((WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength * 2), (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength * 2) * -1)
-      lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / mediaElement.bufferLength)
-      lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / mediaElement.bufferLength) * -1
+      canvasCtx.lineTo((WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / bufferLength * 2), (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / bufferLength * 2) * -1)
+      lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / bufferLength)
+      lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / bufferLength) * -1
     } else {
       canvasCtx.lineTo(x, y)
     }
@@ -554,7 +561,6 @@ const changeVisualizer = (type) => {
 }
 
 ipcRenderer.on('changeSettings', function (event, data) {
-  console.log(data)
   Object.keys(data).forEach(key => {
     userPreferences[key] = data[key]
   })
