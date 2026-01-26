@@ -213,7 +213,7 @@ function waveVis () {
   if (currentVisualizer === 'circle') { canvasCtx.lineWidth = 3 }
   canvasCtx.beginPath()
   const bufferLength = currentVisualizer === 'circle' ? mediaElement.bufferLength : 512
-  const sliceWidth = WIDTH / (bufferLength - 1)
+  const sliceWidth = WIDTH / (bufferLength - 2)
   const radius1 = HEIGHT / 4
   let x = 0
   let lastx = WIDTH / 2 + radius1
@@ -222,6 +222,9 @@ function waveVis () {
   const i_end = bufferLength
 
   const dataPoints = []; // for bezier curve
+  if (currentVisualizer === 'wave') {
+    canvasCtx.moveTo(-sliceWidth, HEIGHT / 2)
+  }
 
   for (let i = i_start; i < i_end; i++) {
     const v = (((mediaElement.dataArray[i] / 128.0) - 1) * (userPreferences.boosted_audio ? 2 : 1.5)) + 1
@@ -232,11 +235,12 @@ function waveVis () {
       lastx = (WIDTH / 2) + radius2 * Math.cos(i * (2 * Math.PI) / bufferLength)
       lasty = (HEIGHT / 2) + radius2 * Math.sin(i * (2 * Math.PI) / bufferLength) * -1
     } else {
-      if (dataPoints.length) {
+      if (dataPoints.length && (i === i_end || mediaElement.dataArray[i] !== mediaElement.dataArray[i - 1]) ) {
         dataPoints.push({x, y})
-        const p0 = dataPoints[i - 1]
-        const p1 = dataPoints[i]
-        const factor = 2
+        const pointPos = dataPoints.length
+        const p0 = dataPoints[pointPos - 2]
+        const p1 = dataPoints[pointPos - 1]
+        const factor = 3
         const cp1 = {
           x: p0.x + (p1.x - p0.x) / factor,
           y: p0.y + (p1.y - p0.y) / factor
@@ -245,8 +249,8 @@ function waveVis () {
           x: p1.x - (p1.x - p0.x) / factor,
           y: p1.y - (p1.y - p0.y) / factor
         }
-        canvasCtx.moveTo(p0.x, p0.y)
         canvasCtx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, p1.x, p1.y)
+        canvasCtx.moveTo(p1.x, p1.y)
       } else {
         dataPoints.push({x, y})
       }
