@@ -223,7 +223,7 @@ function waveVis () {
 
   const dataPoints = []; // for bezier curve
   if (currentVisualizer === 'wave') {
-    canvasCtx.moveTo(x, HEIGHT / 2)
+    canvasCtx.moveTo(WIDTH / -2, HEIGHT / 2)
   }
 
   for (let i = i_start; i < i_end; i++) {
