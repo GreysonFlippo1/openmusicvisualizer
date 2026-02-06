@@ -7,6 +7,14 @@ const fs = require('fs')
 
 const isMac = process.platform === 'darwin'
 
+let mainWindow
+let window_pinned = false
+
+const pinWindowToggle = () => {
+  window_pinned = !window_pinned
+  mainWindow.setAlwaysOnTop(window_pinned)
+}
+
 const settings = {
   tall_bars: true,
   boosted_audio: false,
@@ -155,6 +163,13 @@ const buildTemplate = [
         role: 'togglefullscreen'
       },
       {
+        label: 'Pin to Top',
+        id: 'window_pinned',
+        type: 'checkbox',
+        checked: false,
+        click: pinWindowToggle
+      },
+      {
         role: 'minimize'
       },
       {
@@ -175,19 +190,8 @@ const buildTemplate = [
 
 let contents
 
-// ipcMain.handle('save-user-data', async (event, fileName, json) => {
-//   const path = app.getPath('userData')
-//   try {
-//     fs.writeFileSync(`${path}/${fileName}`, json, 'utf-8')
-//   } catch (e) {
-//     return e
-//   }
-//   return 'success'
-// })
-
 const changeVisualizer = (type) => {
   settings.currentVisualizer = type
-  // contents.send('changeVisualizer', [type])
   changeSettings()
 }
 
@@ -217,7 +221,6 @@ const updateMenu = (preferences) => {
   const menu = Menu.buildFromTemplate(buildTemplate)
 
   Object.keys(preferences).forEach(key => {
-    // console.log('updating key: ', key, preferences[key])
     if (key == 'currentVisualizer'){
       const value = preferences[key]
       menu.getMenuItemById(value).checked = preferences[key] == value
@@ -232,14 +235,10 @@ const updateMenu = (preferences) => {
 
 const createWindow = () => {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+  mainWindow = new BrowserWindow({
+    width: 500,
+    height: 500,
     title: 'Open Music Visualizer',
-    // transparent: true,
-    // titleBarStyle: 'hiddenInset',
-    // frame: false,
-    // autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
@@ -271,7 +270,6 @@ const createWindow = () => {
         const data = JSON.parse(json)
         Object.keys(settings).forEach(key => {
           settings[key] = data[key] ?? settings[key]
-          // menu.getMenuItemById(key).checked = json[key] ?? settings[key]
         })
         if (isMac) {
           updateMenu(settings)
