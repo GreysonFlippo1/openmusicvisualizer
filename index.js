@@ -163,10 +163,10 @@ const buildTemplate = [
         role: 'togglefullscreen'
       },
       {
-        label: 'Pin to Top',
+        label: 'Always on Top',
         id: 'window_pinned',
         type: 'checkbox',
-        checked: false,
+        checked: window_pinned,
         click: pinWindowToggle
       },
       {
@@ -239,6 +239,7 @@ const createWindow = () => {
     width: 500,
     height: 500,
     title: 'Open Music Visualizer',
+    alwaysOnTop: window_pinned,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js')
     }
