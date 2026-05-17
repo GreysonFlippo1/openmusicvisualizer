@@ -35,7 +35,7 @@
   },
   "build": {
     "appId": "com.openmusicvisualizer.app",
-    "productName": "Open Music Visualizer Beta",
+    "productName": "Open Music Visualizer",
     "target": "portable",
     "directories": {
       "output": "build",
