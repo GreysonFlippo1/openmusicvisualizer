@@ -162,13 +162,15 @@ const buildTemplate = [
       {
         role: 'togglefullscreen'
       },
-      {
-        label: 'Always on Top',
-        id: 'window_pinned',
-        type: 'checkbox',
-        checked: window_pinned,
-        click: pinWindowToggle
-      },
+      ...(isMac ? [
+        {
+          label: 'Always on Top',
+          id: 'window_pinned',
+          type: 'checkbox',
+          checked: window_pinned,
+          click: pinWindowToggle
+        }
+      ] : []),
       {
         role: 'minimize'
       },
